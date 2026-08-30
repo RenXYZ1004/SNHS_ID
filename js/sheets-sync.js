@@ -149,16 +149,32 @@ function getOrCreateSheet(ss, name) {
       }
     }
 
+    // A URL saved from the Settings tab overrides config.js -- but only while
+    // config.js still holds the URL it was saved against. Otherwise a stale
+    // browser entry would silently pin the app to a dead endpoint after the
+    // deployed config was updated, which is impossible to spot from the UI.
     try {
       const saved = localStorage.getItem('snhs_sheets_config');
       if (saved) {
-        this.config = Object.assign(this.config, JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        const fileUrl = (window.APP_CONFIG && window.APP_CONFIG.googleSheets && window.APP_CONFIG.googleSheets.webhookUrl) || '';
+
+        if (parsed.configUrlAtSave && fileUrl && parsed.configUrlAtSave !== fileUrl) {
+          console.warn('Saved Sheets URL was kept from an older config.js; using the current one instead.');
+          delete parsed.webhookUrl;
+        }
+        this.config = Object.assign(this.config, parsed);
+        if (fileUrl) this.config.configUrlAtSave = fileUrl;
       }
     } catch(e) {}
   },
 
   saveConfig() {
     try {
+      // Record which config.js URL this override was saved against, so
+      // loadConfig can drop it once the deployed config moves on.
+      const fileUrl = (window.APP_CONFIG && window.APP_CONFIG.googleSheets && window.APP_CONFIG.googleSheets.webhookUrl) || '';
+      this.config.configUrlAtSave = fileUrl;
       localStorage.setItem('snhs_sheets_config', JSON.stringify(this.config));
       this.updateStatusIndicator();
     } catch(e) {}
@@ -260,7 +276,8 @@ function getOrCreateSheet(ss, name) {
   // Send Single Student Registration to Google Sheet
   async sendStudentToSheet(studentData) {
     if (!this.config.webhookUrl) {
-      console.log('Google Sheets webhook not configured. Stored locally.');
+      console.warn('Google Sheets webhook not configured. Registration stored locally only.');
+      App.showToast('Saved locally. No Google Sheet is connected yet.', 'error');
       return false;
     }
 
@@ -282,21 +299,52 @@ function getOrCreateSheet(ss, name) {
         }
       };
 
-      // Send payload
-      fetch(this.config.webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
-      }).catch(() => {
-        // Ignored CORS redirection note on successful App Script execution
-      });
+      // Apps Script answers a POST with a redirect to a googleusercontent.com
+      // URL that carries no CORS headers, so this fetch rejects even when the
+      // row was written. The rejection therefore tells us nothing and must be
+      // ignored -- we confirm the write with a follow-up read instead.
+      try {
+        await fetch(this.config.webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+      } catch (e) {
+        /* expected: opaque cross-origin redirect */
+      }
 
-      console.log('Dispatched student registration to Google Sheet:', studentData.refCode);
-      return true;
+      return await this.confirmStudentSaved(studentData.refCode);
     } catch(err) {
-      console.warn('Sheets sync dispatch note:', err);
+      console.warn('Sheets sync dispatch failed:', err);
+      App.showToast('Saved locally, but the Google Sheet could not be reached.', 'error');
       return false;
     }
+  },
+
+  // Reads the sheet back to prove the row actually landed. Without this a
+  // failed sync is invisible: the POST looks identical whether it succeeded,
+  // hit a sign-in wall, or was rejected by the script.
+  async confirmStudentSaved(refCode, attempts = 3) {
+    for (let i = 0; i < attempts; i++) {
+      await new Promise(r => setTimeout(r, 700 * (i + 1)));
+      try {
+        const res = await fetch(`${this.config.webhookUrl}?action=getStudents&t=${Date.now()}`);
+        const data = await res.json();
+        const rows = (data && data.students) || [];
+        const found = rows.some(r => String(r.RefCode || r.refCode || '').trim() === String(refCode).trim());
+        if (found) {
+          this.config.lastSyncTime = new Date().toISOString();
+          App.showToast('Registration saved to the Google Sheet.', 'success');
+          return true;
+        }
+      } catch (e) {
+        // network hiccup or sign-in wall -- retry, then report below
+      }
+    }
+
+    console.warn('Sheets sync: row ' + refCode + ' was not found after posting.');
+    App.showToast('Saved locally, but it did NOT reach the Google Sheet. Check the Apps Script deployment access.', 'error');
+    return false;
   },
 
   // Fetch submitted registrations from Google Sheet

@@ -87,6 +87,30 @@ function doGet(e) {
     return jsonResponse({ status: "error", authorized: false, message: "Invalid username or password." });
   }
 
+  // 2b. Diagnostics -- reports WHICH spreadsheet this script is bound to and
+  // what the Staff_Accounts tab actually contains. Passwords are never
+  // returned, only usernames, so this is safe to call from a browser.
+  if (action === "diagnose") {
+    var tabs = ss.getSheets().map(function (sh) { return sh.getName(); });
+    var staff = ss.getSheetByName(STAFF_SHEET_NAME);
+    var staffRows = staff ? staff.getDataRange().getValues() : [];
+    var usernames = [];
+    for (var q = 1; q < staffRows.length; q++) {
+      if (staffRows[q][0]) usernames.push(String(staffRows[q][0]).trim());
+    }
+    return jsonResponse({
+      status: "success",
+      spreadsheetName: ss.getName(),
+      spreadsheetId: ss.getId(),
+      spreadsheetUrl: ss.getUrl(),
+      tabs: tabs,
+      staffTabExists: !!staff,
+      staffDataRows: Math.max(0, staffRows.length - 1),
+      staffUsernames: usernames,
+      emergencyLoginActive: staffRows.length <= 1
+    });
+  }
+
   // 3. Test ping
   return jsonResponse({
     status: "success",
