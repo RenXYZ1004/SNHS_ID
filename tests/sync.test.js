@@ -232,6 +232,66 @@ module.exports = async function (t) {
     t('network error resolves null', (await app.BlobStore.uploadPhoto('data:image/jpeg;base64,Z', 'R')) === null);
   }
 
+  t.section('staff studio photos are stored too');
+  {
+    const uploads = [];
+    const app = await boot({
+      fetch: (u, o) => {
+        if (String(u).indexOf('/api/upload-photo') >= 0) {
+          uploads.push(JSON.parse(o.body));
+          return Promise.resolve({ ok: true, status: 200, json: async () => ({ url: 'https://blob.example/staff.jpg' }) });
+        }
+        if (o && o.method === 'POST') return Promise.reject(new Error('opaque'));
+        return Promise.resolve({ ok: true, json: async () => ({ status: 'success', students: [] }) });
+      }
+    });
+
+    app.CardRenderer.state.photoUrl = 'data:image/jpeg;base64,STAFFPHOTO';
+    app.CardRenderer.state.fullName = 'Staff Made';
+    app.CardRenderer.state.idNumber = 'SNHS-2026-777';
+    app.click('btn-add-to-batch');
+    await app.wait(120);
+
+    t('queuing a card uploads its photo', uploads.length === 1, String(uploads.length));
+    t('named by ID number', uploads[0] && uploads[0].refCode === 'SNHS-2026-777', uploads[0] && uploads[0].refCode);
+    const queued = app.window.BulkGenerator.dataset[app.window.BulkGenerator.dataset.length - 1];
+    t('hosted URL recorded on the card', queued && queued.hostedPhotoUrl === 'https://blob.example/staff.jpg',
+      queued && String(queued.hostedPhotoUrl));
+  }
+
+  t.section('a card with only a generated avatar is not uploaded');
+  {
+    const uploads = [];
+    const app = await boot({
+      fetch: (u, o) => {
+        if (String(u).indexOf('/api/upload-photo') >= 0) { uploads.push(1); return Promise.resolve({ ok: true, status: 200, json: async () => ({ url: 'x' }) }); }
+        if (o && o.method === 'POST') return Promise.reject(new Error('opaque'));
+        return Promise.resolve({ ok: true, json: async () => ({ status: 'success', students: [] }) });
+      }
+    });
+    app.CardRenderer.state.photoUrl = 'data:image/svg+xml;utf8,<svg/>';
+    app.click('btn-add-to-batch');
+    await app.wait(120);
+    t('svg placeholder skipped', uploads.length === 0, String(uploads.length));
+  }
+
+  t.section('registration with no photo says so');
+  {
+    const app = await boot({
+      fetch: (u, o) => {
+        if (o && o.method === 'POST') return Promise.reject(new Error('opaque'));
+        return Promise.resolve({ ok: true, json: async () => ({ status: 'success', students: [] }) });
+      }
+    });
+    app.fillRegistration();
+    app.Portal.studentForm.photoUrl = '';
+    app.clearToasts();
+    await app.Portal.handleStudentSubmit();
+    await app.wait(60);
+    t('explains nothing was stored', app.toasts().some(x => /No photo was attached/i.test(x)),
+      JSON.stringify(app.toasts()).slice(0, 90));
+  }
+
   t.section('upload progress is visible');
   {
     let release;

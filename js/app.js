@@ -209,13 +209,25 @@ const App = {
     // Add to Batch Queue Button
     const addBatchBtn = document.getElementById('btn-add-to-batch');
     if (addBatchBtn) {
-      addBatchBtn.addEventListener('click', () => {
+      addBatchBtn.addEventListener('click', async () => {
         const item = { ...CardRenderer.state, id: 'batch_' + Date.now() };
         BulkGenerator.dataset.push(item);
         BulkGenerator.renderTable();
         BulkGenerator.renderBatchGrid();
         BulkGenerator.updateCounter();
-        this.showToast(`Added ${item.fullName} to Batch Queue!`, 'success');
+        this.showToast(`Added ${item.fullName || 'card'} to Batch Queue!`, 'success');
+
+        // Queuing is the point at which a staff-made card becomes a record, so
+        // it is also the point to store its photo. Without this the studio's
+        // photos only ever existed in this tab -- which is why the Blob store
+        // stayed empty for anyone who never used the student wizard.
+        if (window.BlobStore && BlobStore.isStorable(item.photoUrl)) {
+          const hosted = await BlobStore.uploadPhoto(item.photoUrl, item.idNumber || item.lrn || item.id);
+          if (hosted) {
+            item.hostedPhotoUrl = hosted;
+            this.showToast('Photo stored in secure storage.', 'success');
+          }
+        }
       });
     }
   },

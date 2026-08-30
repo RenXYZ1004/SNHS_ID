@@ -43,10 +43,17 @@ const BlobStore = {
     });
   },
 
+  // Only real captured photos are worth storing. Generated placeholder avatars
+  // are SVG data URLs, and the endpoint rejects SVG anyway (it is a stored-XSS
+  // vector), so sending one would just produce a guaranteed 415.
+  isStorable(dataUrl) {
+    return typeof dataUrl === 'string' && /^data:image\/(jpeg|jpg|png|webp);/i.test(dataUrl);
+  },
+
   // Returns the public blob URL, or null when the photo should stay local.
   async uploadPhoto(dataUrl, refCode) {
     if (!this.available) return null;
-    if (!dataUrl || !/^data:image\//.test(dataUrl)) return null;
+    if (!this.isStorable(dataUrl)) return null;
 
     try {
       const normalized = await this.normalize(dataUrl);

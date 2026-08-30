@@ -637,6 +637,12 @@ const Portal = {
     // button can report progress rather than the upload happening invisibly.
     // The card renders from the local data URL either way, so a failed or
     // unconfigured upload never blocks a registration.
+    if (window.BlobStore && !this.studentForm.photoUrl) {
+      // Silence here reads as "the upload failed"; it did not run at all.
+      console.warn('Registration submitted without a photo; nothing to upload.');
+      App.showToast('No photo was attached, so none was stored.', 'error');
+    }
+
     if (window.BlobStore && this.studentForm.photoUrl) {
       this.setSubmitBusy(true, 'Uploading photo...');
       try {
