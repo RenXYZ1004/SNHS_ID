@@ -107,6 +107,75 @@ module.exports = async function (t) {
     t('tells the user', app.toasts().some(x => /No Google Sheet is connected/i.test(x)));
   }
 
+  t.section('fetching records back from the sheet');
+  {
+    // A sheet whose row 1 holds a registration instead of headers: the Apps
+    // Script then names every field after that row's values, so row.LRN is
+    // undefined and the old import silently skipped all of it.
+    const headerless = [
+      { '2026-08-30': '2026-08-29', 'SNHS-REG-2026-0005': 'SNHS-REG-2026-0004', '109283746501': '109283746502',
+        'Juan M. Dela Cruz': 'Ana R. Santos', 'Grade 12 - STEM-A': 'Grade 11 - ABM',
+        'Academic Track - STEM': 'Academic Track - ABM', 'Maria Dela Cruz': 'Rosa Santos',
+        '0917-123-4567': '0918-555-0000', 'Busuanga': 'Coron', 'O+': 'A+',
+        '2008-05-14': '2009-02-11', 'Submitted Online': 'Submitted Online' }
+    ];
+    const app = await boot({
+      fetch: (u, o) => {
+        if (String(u).indexOf('/api/sheets') >= 0) return Promise.resolve({ ok: false, status: 404, json: async () => ({}) });
+        return Promise.resolve({ ok: true, json: async () => ({ status: 'success', students: headerless }) });
+      }
+    });
+    app.Portal.registeredStudents = [];
+    app.clearToasts();
+    await app.SheetsSync.fetchStudentsFromSheet();
+    t('headerless sheet still imports', app.Portal.registeredStudents.length === 1,
+      String(app.Portal.registeredStudents.length));
+    t('LRN read by column order', app.Portal.registeredStudents[0] && app.Portal.registeredStudents[0].lrn === '109283746502',
+      app.Portal.registeredStudents[0] && app.Portal.registeredStudents[0].lrn);
+    t('warns about the missing header row', app.toasts().some(x => /missing its header row/i.test(x)),
+      JSON.stringify(app.toasts()));
+  }
+
+  t.section('properly headed sheet');
+  {
+    const rows = [{
+      Timestamp: '2026-08-30T08:00:00.000Z', RefCode: 'SNHS-REG-2026-0007', LRN: "'109283746509",
+      FullName: 'Pedro Cruz', GradeSection: 'Grade 12 - STEM-A', TrackStrand: 'STEM',
+      EmergencyContact: 'Rosa Cruz', EmergencyPhone: "'0917-000-1111", Address: 'Busuanga',
+      BloodType: 'B+', BirthDate: '2008-01-01', PhotoURL: 'https://blob.example/p.jpg', Status: 'Submitted Online'
+    }];
+    const app = await boot({
+      fetch: (u, o) => {
+        if (String(u).indexOf('/api/sheets') >= 0) return Promise.resolve({ ok: false, status: 404, json: async () => ({}) });
+        return Promise.resolve({ ok: true, json: async () => ({ status: 'success', students: rows }) });
+      }
+    });
+    app.Portal.registeredStudents = [];
+    app.clearToasts();
+    await app.SheetsSync.fetchStudentsFromSheet();
+    const rec = app.Portal.registeredStudents[0];
+    t('record imported', !!rec);
+    t('leading apostrophe stripped from LRN', rec && rec.lrn === '109283746509', rec && rec.lrn);
+    t('hosted photo used', rec && rec.photoUrl === 'https://blob.example/p.jpg', rec && String(rec.photoUrl).slice(0, 30));
+    t('success reported', app.toasts().some(x => /Fetched 1 new student record/.test(x)), JSON.stringify(app.toasts()));
+
+    app.clearToasts();
+    await app.SheetsSync.fetchStudentsFromSheet();
+    t('re-fetch does not duplicate', app.Portal.registeredStudents.length === 1, String(app.Portal.registeredStudents.length));
+    t('says already up to date', app.toasts().some(x => /Already up to date/i.test(x)), JSON.stringify(app.toasts()));
+  }
+
+  t.section('expired staff session on fetch');
+  {
+    const app = await boot({
+      fetch: () => Promise.resolve({ ok: false, status: 401, json: async () => ({ error: 'Staff sign-in required.' }) })
+    });
+    app.SheetsSync.staffToken = 'stale';
+    app.clearToasts();
+    await app.SheetsSync.fetchStudentsFromSheet();
+    t('asks the user to log in again', app.toasts().some(x => /session expired/i.test(x)), JSON.stringify(app.toasts()));
+  }
+
   t.section('blob photo storage');
   {
     let mode = 'ok';

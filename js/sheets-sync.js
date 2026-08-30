@@ -430,15 +430,54 @@ function getOrCreateSheet(ss, name) {
     App.showToast('Fetching latest records from Google Sheet...', 'info');
 
     try {
-      const fetchUrl = this.config.webhookUrl + (this.config.webhookUrl.includes('?') ? '&' : '?') + 'action=getStudents&t=' + Date.now();
-      const res = await fetch(fetchUrl);
-      const data = await res.json();
+      let data = null;
+
+      // Preferred path: through the proxy, which attaches the staff session.
+      const viaProxy = await this.viaProxy('getStudents', {});
+      if (viaProxy.ok) {
+        data = viaProxy.data;
+      } else if (viaProxy.unauthorized) {
+        App.showToast('Your staff session expired. Please log in again.', 'error');
+        return;
+      } else if (viaProxy.unavailable) {
+        const fetchUrl = this.config.webhookUrl + (this.config.webhookUrl.includes('?') ? '&' : '?') + 'action=getStudents&t=' + Date.now();
+        const res = await fetch(fetchUrl);
+        data = await res.json();
+      } else {
+        App.showToast('Could not reach the Google Sheet service.', 'error');
+        return;
+      }
 
       if (data && data.status === 'success' && Array.isArray(data.students)) {
+        // The Apps Script names each field after row 1 of the sheet. If that
+        // row holds a registration instead of headers, every lookup below
+        // returns undefined and the import silently adds nothing -- so fall
+        // back to column order, which the script always writes the same way.
+        const rows = data.students;
+        const headed = rows.some(r => r && (Object.prototype.hasOwnProperty.call(r, 'LRN') || Object.prototype.hasOwnProperty.call(r, 'RefCode')));
+
+        if (!headed && rows.length) {
+          console.warn('Sheet has no header row; falling back to column order.');
+          App.showToast('The sheet is missing its header row - importing by column order. Add the headers to fix this properly.', 'error');
+        }
+
+        const byPosition = (row) => {
+          const v = Object.values(row);
+          const wide = v.length >= 13;
+          return {
+            Timestamp: v[0], RefCode: v[1], LRN: v[2], FullName: v[3],
+            GradeSection: v[4], TrackStrand: v[5], EmergencyContact: v[6],
+            EmergencyPhone: v[7], Address: v[8], BloodType: v[9], BirthDate: v[10],
+            PhotoURL: wide ? v[11] : '', Status: wide ? v[12] : v[11]
+          };
+        };
+
         let addedCount = 0;
-        data.students.forEach((row, idx) => {
-          const lrn = String(row.LRN || '').replace(/^'/, '');
-          if (!lrn) return;
+        let skipped = 0;
+        rows.forEach((raw, idx) => {
+          const row = headed ? raw : byPosition(raw);
+          const lrn = String(row.LRN || '').replace(/^'/, '').trim();
+          if (!lrn) { skipped++; return; }
 
           const exists = Portal.registeredStudents.some(s => s.lrn === lrn);
           if (!exists) {
@@ -455,7 +494,7 @@ function getOrCreateSheet(ss, name) {
               bloodType: row.BloodType || 'O+',
               birthDate: row.BirthDate || '2008-05-14',
               dateRegistered: row.Timestamp ? row.Timestamp.split('T')[0] : '2026-08-30',
-              photoUrl: Templates.getRandomSampleAvatar('m', idx),
+              photoUrl: row.PhotoURL || Templates.getRandomSampleAvatar('m', idx),
               signatureUrl: Templates.getDefaultSignatureSVG(),
               status: row.Status || 'From Google Sheet'
             });
@@ -464,9 +503,18 @@ function getOrCreateSheet(ss, name) {
         });
 
         Portal.saveDatabase();
-        App.showToast(`Fetched ${addedCount} new student records from Google Sheets!`, 'success');
+
+        if (addedCount) {
+          App.showToast(`Fetched ${addedCount} new student record${addedCount === 1 ? '' : 's'} from Google Sheets.`, 'success');
+        } else if (skipped) {
+          App.showToast(`${skipped} row${skipped === 1 ? '' : 's'} in the sheet had no LRN and were skipped.`, 'error');
+        } else if (rows.length) {
+          App.showToast('Already up to date - every sheet record is already here.', 'info');
+        } else {
+          App.showToast('The Google Sheet has no student records yet.', 'info');
+        }
       } else {
-        App.showToast('No new records found in Google Sheet.', 'info');
+        App.showToast('The Google Sheet returned an unexpected response.', 'error');
       }
     } catch(err) {
       console.error(err);
