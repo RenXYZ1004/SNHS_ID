@@ -78,6 +78,7 @@ body {
   color: var(--text-main);
   line-height: 1.5;
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
@@ -2511,6 +2512,23 @@ textarea:focus {
   max-width: 480px;
   overflow: hidden;
   box-shadow: var(--shadow-lg);
+
+  /* Never taller than the viewport: header and footer stay put, the body
+     scrolls. Without this a tall modal (receipt, cropper, signature pad)
+     pushes its buttons off a short screen with no way to reach them. */
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 2rem);
+  max-height: calc(100dvh - 2rem);
+}
+.modal-header,
+.modal-footer {
+  flex-shrink: 0;
+}
+.modal-body {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 .modal-card.modal-lg {
   max-width: 680px;
@@ -2851,6 +2869,43 @@ img, canvas, svg, video {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+
+/* ---------- Notched / rounded displays ---------- */
+@supports (padding: max(0px)) {
+  .app-header {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .modal-overlay {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+}
+
+/* ---------- Short viewports (landscape phones, split screen) ----------
+   A 72px sticky header plus a full-height card leaves almost nothing to
+   read, so release the header and scale the card down further. */
+@media (max-height: 560px) {
+  .app-header {
+    position: static;
+    height: auto;
+  }
+  .modal-overlay { padding: 0.5rem; }
+  .modal-card { max-height: calc(100vh - 1rem); max-height: calc(100dvh - 1rem); }
+  .cards-wrapper { --fit: 0.62; }
+  .card-display-viewport { padding: 0.5rem 0.25rem; }
+  .wizard-progress-bar { padding: 0.5rem; }
+}
+
+/* ---------- Very small phones in landscape ---------- */
+@media (max-height: 430px) {
+  .cards-wrapper { --fit: 0.5; }
+  .wizard-step-item .step-text { display: none; }
 }
 
 /* ==========================================================================

@@ -48,6 +48,36 @@ const App = {
     this.showToast('Welcome to SNHS ID & Registration Portal', 'info');
   },
 
+  // Export features depend on libraries loaded from a CDN. On a blocked or
+  // offline network those globals are simply absent, and calling them throws
+  // an uncaught TypeError -- the button appears dead with no explanation.
+  // Check first and say what is missing.
+  LIB_LABELS: {
+    html2canvas: 'image renderer',
+    jspdf: 'PDF library',
+    JSZip: 'ZIP library',
+    saveAs: 'file saver',
+    XLSX: 'spreadsheet reader',
+    Cropper: 'crop tool',
+    QRCode: 'QR generator'
+  },
+
+  hasLib(name) {
+    return typeof window[name] !== 'undefined' && window[name] !== null;
+  },
+
+  requireLibs() {
+    const missing = [];
+    for (let i = 0; i < arguments.length; i++) {
+      if (!this.hasLib(arguments[i])) missing.push(this.LIB_LABELS[arguments[i]] || arguments[i]);
+    }
+    if (missing.length) {
+      this.showToast('Cannot do that right now - the ' + missing.join(' and ') + ' failed to load. Check your connection and reload.', 'error');
+      return false;
+    }
+    return true;
+  },
+
   // Largest image a user may pick. Checked before reading the file, so an
   // oversized photo is rejected instantly instead of after a slow base64 read.
   MAX_UPLOAD_BYTES: 5 * 1024 * 1024,

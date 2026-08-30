@@ -52,6 +52,7 @@ const ExportEngine = {
 
   // Download Single Side PNG (High DPI)
   async downloadSinglePNG(side = 'front') {
+    if (!App.requireLibs('html2canvas', 'saveAs')) return;
     const el = document.getElementById(`card-${side}-element`);
     if (!el) return;
 
@@ -84,6 +85,7 @@ const ExportEngine = {
 
   // Download Combined Dual-Side PNG
   async downloadCombinedPNG() {
+    if (!App.requireLibs('html2canvas', 'saveAs')) return;
     const frontEl = document.getElementById('card-front-element');
     const backEl = document.getElementById('card-back-element');
     if (!frontEl || !backEl) return;
@@ -142,6 +144,7 @@ const ExportEngine = {
 
   // Download Standard CR80 PDF (Page 1 Front, Page 2 Back)
   async downloadSinglePDF() {
+    if (!App.requireLibs('html2canvas', 'jspdf')) return;
     const frontEl = document.getElementById('card-front-element');
     const backEl = document.getElementById('card-back-element');
     if (!frontEl || !backEl) return;
@@ -264,6 +267,7 @@ const ExportEngine = {
 
   // Export A4 Sheet as Print-Ready PDF
   async exportA4PrintPDF() {
+    if (!App.requireLibs('html2canvas', 'jspdf')) return;
     const sheet = document.getElementById('a4-print-sheet');
     if (!sheet) return;
 

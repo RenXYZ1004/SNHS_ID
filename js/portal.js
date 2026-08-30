@@ -119,8 +119,21 @@ const Portal = {
       localStorage.setItem('snhs_registered_students', JSON.stringify(this.registeredStudents));
       this.updateStats();
       this.renderRegisteredTable();
+      return true;
     } catch(e) {
       console.error('Storage error:', e);
+      // Almost always the ~5 MB quota, filled by base64 photos. Silence here
+      // means the record is gone on reload while the user thinks it saved.
+      const full = e && (e.name === 'QuotaExceededError' || e.code === 22 || e.code === 1014);
+      App.showToast(
+        full
+          ? 'This browser is out of storage. Export or clear old registrations before adding more.'
+          : 'Could not save to this browser. The record may be lost when you reload.',
+        'error'
+      );
+      this.updateStats();
+      this.renderRegisteredTable();
+      return false;
     }
   },
 
@@ -582,7 +595,7 @@ const Portal = {
 
     const fullName = `${firstName} ${middleName} ${lastName}`.replace(/\s+/g, ' ').trim();
     const gradeSection = `${grade} - ${section}`;
-    const nextSeq = String(this.registeredStudents.length + 1).padStart(4, '0');
+    const nextSeq = String(this.nextRefSequence()).padStart(4, '0');
     const refCode = `SNHS-REG-2026-${nextSeq}`;
     const idNumber = `SNHS-2026-${nextSeq}`;
 
@@ -663,6 +676,18 @@ const Portal = {
     }
   },
 
+  // Next reference number, derived from the highest sequence already issued
+  // rather than the record count -- deleting a record used to make the next
+  // registration reuse a live reference code.
+  nextRefSequence() {
+    let highest = 0;
+    for (const rec of this.registeredStudents) {
+      const m = /(\d+)\s*$/.exec(String(rec && rec.refCode || ''));
+      if (m) highest = Math.max(highest, parseInt(m[1], 10) || 0);
+    }
+    return highest + 1;
+  },
+
   // Open Receipt Modal showing both Front and Back cards
   openReceiptModal(record) {
     const modal = document.getElementById('modal-reg-success');
@@ -693,6 +718,7 @@ const Portal = {
 
   // Download Front or Back of ID from receipt modal
   async downloadReceiptCardSide(side) {
+    if (!App.requireLibs('html2canvas', 'saveAs')) return;
     if (!this.lastSubmittedRecord) return;
     const cardEl = document.getElementById(side === 'back' ? 'receipt-back-card' : 'receipt-front-card');
     if (!cardEl) return;
@@ -719,6 +745,7 @@ const Portal = {
 
   // Download Combined Front + Back Digital ID (PNG)
   async downloadStudentDigitalID() {
+    if (!App.requireLibs('html2canvas', 'saveAs')) return;
     if (!this.lastSubmittedRecord) return;
     const stage = document.getElementById('receipt-card-stage');
     if (!stage) return;
