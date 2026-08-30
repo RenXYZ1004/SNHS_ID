@@ -30,6 +30,7 @@ const App = {
 
     // Initialize sub-modules
     CardRenderer.init();
+    SheetsSync.init();
     Portal.init();
     BulkGenerator.init();
     ExportEngine.init();
