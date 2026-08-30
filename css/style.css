@@ -1377,6 +1377,17 @@ textarea:focus {
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
+/* The school seal is a photo with a white background, so clip it to a circle:
+   the seal's own white ring then reads as a badge on the dark card header
+   instead of a white square. */
+.card-logo-right .header-logo {
+  border-radius: 50%;
+  background: #ffffff;
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
 .card-school-info {
   text-align: center;
   flex: 1;

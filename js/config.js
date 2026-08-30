@@ -16,7 +16,7 @@ const APP_CONFIG = {
     webhookUrl: "https://script.google.com/macros/s/AKfycbzh0W6WK7-wVAhXr6ImDC5yCX6HFoT0KWylJDuQDVkUyhI__u-lyo_URxbMOJPh6RBs0A/exec",
 
     // (Optional) Direct link to your Google Sheet for quick staff reference
-    sheetUrl: "https://docs.google.com/spreadsheets/d/17ye97lIW2Fpgj9YptdNAJd8fiMIxpMr73ktlbCjg61A/edit?gid=0#gid=0",
+    sheetUrl: "https://docs.google.com/spreadsheets/d/17ye97lIW2Fpgj9YptdNAJd8fiMIxpMr73ktlbCjg61A/edit?usp=sharing",
 
     // Auto-sync every student self-registration directly to Google Sheets
     autoSyncOnRegister: true,
@@ -60,6 +60,10 @@ const APP_CONFIG = {
     division: "SCHOOLS DIVISION OF PALAWAN",
     name: "Salvacion National High School",
     address: "San Salvacion, Busuanga • School ID: 301734",
+
+    // School seal shown at the top-right of the ID card front.
+    // Relative to the site root; leave blank to fall back to the generated SVG seal.
+    logoUrl: "snhs_logo.jpg",
     schoolYear: "S.Y. 2025 - 2026",
     
     // Principal Details (Printed on Back of ID)

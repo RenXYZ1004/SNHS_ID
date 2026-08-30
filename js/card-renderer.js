@@ -40,6 +40,7 @@ const CardRenderer = {
     schoolAddress: 'San Salvacion, Busuanga • School ID: 301734',
     leftLogoUrl: '',
     rightLogoUrl: '',
+    schoolLogoUrl: '',
 
     // Design Tokens
     preset: 'snhs-deped',
@@ -69,6 +70,9 @@ const CardRenderer = {
       this.state.schoolName = sch.name || this.state.schoolName;
       this.state.schoolAddress = sch.address || this.state.schoolAddress;
       this.state.schoolYear = sch.schoolYear || this.state.schoolYear;
+      if (sch.logoUrl) {
+        this.state.schoolLogoUrl = sch.logoUrl;
+      }
       if (sch.principal) {
         this.state.principalName = sch.principal.name || this.state.principalName;
         this.state.principalTitle = sch.principal.title || this.state.principalTitle;
@@ -86,7 +90,8 @@ const CardRenderer = {
     this.state.signatureUrl = Templates.getDefaultSignatureSVG();
     this.state.principalSigUrl = Templates.getPrincipalSignatureSVG();
     this.state.leftLogoUrl = Templates.getDepEdLogoSVG();
-    this.state.rightLogoUrl = Templates.getSchoolSealSVG(this.state.accentColor, this.state.primaryColor);
+    this.state.rightLogoUrl = this.state.schoolLogoUrl
+      || Templates.getSchoolSealSVG(this.state.accentColor, this.state.primaryColor);
 
     this.applyThemeColors();
     this.render();
