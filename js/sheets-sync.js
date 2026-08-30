@@ -295,6 +295,7 @@ function getOrCreateSheet(ss, name) {
           address: studentData.address,
           bloodType: studentData.bloodType,
           birthDate: studentData.birthDate,
+          photoUrl: studentData.hostedPhotoUrl || '',
           status: 'Submitted Online'
         }
       };

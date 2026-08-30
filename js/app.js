@@ -467,6 +467,7 @@ const App = {
   // Open & Close Cropper Modal
   openCropperModal(imgSrc, target = 'card') {
     this.cropTarget = target;
+    this.pendingImageSrc = imgSrc;
     const modal = document.getElementById('crop-modal');
     const targetImg = document.getElementById('cropper-target-img');
     if (!modal || !targetImg) return;
@@ -476,6 +477,18 @@ const App = {
 
     if (this.cropper) {
       this.cropper.destroy();
+    }
+
+    if (!window.Cropper) {
+      // Cropper.js is loaded from a CDN. If it is blocked or slow the modal
+      // would otherwise open with a dead Apply button and no way forward, so
+      // accept the image uncropped rather than stranding the user.
+      console.warn('Cropper.js unavailable - accepting the photo uncropped.');
+      this.showToast('Crop tool unavailable; using the photo as-is.', 'info');
+      this.pendingImageSrc = null;
+      this.deliverPhoto(imgSrc);
+      this.closeCropperModal();
+      return;
     }
 
     if (window.Cropper) {
@@ -504,7 +517,21 @@ const App = {
   },
 
   applyCroppedImage() {
-    if (!this.cropper) return;
+    if (!this.cropper) {
+      // No cropper instance (CDN blocked, or it failed to initialise):
+      // fall back to the image the user picked instead of doing nothing.
+      // Consumed once -- otherwise a second invocation would overwrite a
+      // good crop with the original uncropped file.
+      const pending = this.pendingImageSrc;
+      this.pendingImageSrc = null;
+      if (pending) {
+        this.deliverPhoto(pending);
+        this.closeCropperModal();
+        this.showToast('Photo applied without cropping.', 'info');
+      }
+      return;
+    }
+
     const canvas = this.cropper.getCroppedCanvas({
       width: 400,
       height: 470,
@@ -512,15 +539,20 @@ const App = {
     });
     const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
 
+    this.pendingImageSrc = null;
+    this.deliverPhoto(dataUrl);
+    this.closeCropperModal();
+    this.showToast('ID Photo cropped and applied.', 'success');
+  },
+
+  // Hands a finished photo to whichever form opened the cropper.
+  deliverPhoto(dataUrl) {
     if (this.cropTarget === 'student' && window.Portal) {
       Portal.setStudentPhoto(dataUrl);
     } else {
       CardRenderer.state.photoUrl = dataUrl;
       CardRenderer.render();
     }
-
-    this.closeCropperModal();
-    this.showToast('ID Photo cropped and applied.', 'success');
   },
 
   // Signature Pad Drawer Modal

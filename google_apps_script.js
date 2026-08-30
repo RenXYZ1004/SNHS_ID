@@ -154,6 +154,7 @@ function doPost(e) {
         s.address || "",
         s.bloodType || "O+",
         s.birthDate || "",
+        s.photoUrl || "",
         s.status || "Registered Online"
       ]);
 
@@ -184,11 +185,11 @@ function getOrCreateRegistrationsSheet(ss) {
     sheet.appendRow([
       "Timestamp", "RefCode", "LRN", "FullName", "GradeSection", 
       "TrackStrand", "EmergencyContact", "EmergencyPhone", "Address", 
-      "BloodType", "BirthDate", "Status"
+      "BloodType", "BirthDate", "PhotoURL", "Status"
     ]);
 
     // Format headers with DepEd Navy Blue & Gold Accent
-    var headerRange = sheet.getRange(1, 1, 1, 12);
+    var headerRange = sheet.getRange(1, 1, 1, 13);
     headerRange.setFontWeight("bold")
                .setBackground("#0b2545")
                .setFontColor("#ffffff")

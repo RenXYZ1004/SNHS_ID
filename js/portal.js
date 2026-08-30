@@ -618,13 +618,24 @@ const Portal = {
     BulkGenerator.renderBatchGrid();
     BulkGenerator.updateCounter();
 
+    this.lastSubmittedRecord = newRecord;
+    this.openReceiptModal(newRecord);
+
+    // Store the photo in Vercel Blob and record its URL, then sync. The card
+    // keeps rendering from the local data URL either way, so a failed or
+    // unconfigured upload never blocks a registration.
+    if (window.BlobStore && this.studentForm.photoUrl) {
+      const hostedUrl = await BlobStore.uploadPhoto(this.studentForm.photoUrl, refCode);
+      if (hostedUrl) {
+        newRecord.hostedPhotoUrl = hostedUrl;
+        this.saveDatabase();
+      }
+    }
+
     // 🚀 Send directly to Google Sheet in Cloud
     if (window.SheetsSync) {
       SheetsSync.sendStudentToSheet(newRecord);
     }
-
-    this.lastSubmittedRecord = newRecord;
-    this.openReceiptModal(newRecord);
   },
 
   // Open Receipt Modal showing both Front and Back cards
