@@ -25,6 +25,39 @@ var REGISTRATIONS_SHEET_NAME = "Student_Registrations";
 var STAFF_SHEET_NAME = "Staff_Accounts";
 
 /**
+ * Shared secret. Set it in the editor under Project Settings ->
+ * Script Properties, as API_KEY, and use the same value for SHEETS_API_KEY in
+ * the website's environment. Do NOT put the value in this file: it is committed
+ * to the repository.
+ *
+ * While no API_KEY is set the script stays open, exactly as before, so adding
+ * this code cannot break a live site. The moment you set one, only callers that
+ * present it -- i.e. the site's own api/sheets.js -- are answered, and the
+ * /exec URL on its own stops being enough to read student records.
+ */
+function requiredKey() {
+  try {
+    return PropertiesService.getScriptProperties().getProperty("API_KEY") || "";
+  } catch (err) {
+    return "";
+  }
+}
+
+function keyAccepted(supplied) {
+  var expected = requiredKey();
+  if (!expected) return true;
+  return String(supplied || "") === expected;
+}
+
+function deniedResponse() {
+  return jsonResponse({
+    status: "error",
+    authorized: false,
+    message: "This endpoint requires a valid API key."
+  });
+}
+
+/**
  * Handle GET requests:
  * 1. action=getStudents -> Retrieves all student submissions.
  * 2. action=authStaff   -> Authenticates staff credentials against Staff_Accounts.
@@ -33,6 +66,12 @@ var STAFF_SHEET_NAME = "Staff_Accounts";
 function doGet(e) {
   var action = (e && e.parameter && e.parameter.action) ? e.parameter.action : "test";
   var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  // "test" stays open so the deployment can be pinged; everything that touches
+  // student data or credentials requires the key once one is configured.
+  if (action !== "test" && !keyAccepted(e && e.parameter && e.parameter.key)) {
+    return deniedResponse();
+  }
 
   // 1. Fetch all student submissions
   if (action === "getStudents") {
@@ -60,31 +99,7 @@ function doGet(e) {
 
   // 2. Authenticate Staff credentials
   if (action === "authStaff") {
-    var user = (e.parameter.username || "").trim();
-    var pass = (e.parameter.password || "").trim();
-    
-    var staffSheet = getOrCreateStaffSheet(ss);
-    var staffData = staffSheet.getDataRange().getValues();
-
-    // Default emergency login if sheet has only headers
-    if (staffData.length <= 1) {
-      if (user === "admin" && pass === "snhs2026") {
-        return jsonResponse({ status: "success", authorized: true, role: "Administrator", name: "School Registrar" });
-      }
-    }
-
-    for (var k = 1; k < staffData.length; k++) {
-      var rowUser = String(staffData[k][0] || "").trim();
-      var rowPass = String(staffData[k][1] || "").trim();
-      var rowRole = String(staffData[k][2] || "Staff").trim();
-      var rowName = String(staffData[k][3] || rowUser).trim();
-
-      if (rowUser.toLowerCase() === user.toLowerCase() && rowPass === pass) {
-        return jsonResponse({ status: "success", authorized: true, role: rowRole, name: rowName });
-      }
-    }
-
-    return jsonResponse({ status: "error", authorized: false, message: "Invalid username or password." });
+    return authenticateStaff(ss, e.parameter.username, e.parameter.password);
   }
 
   // 2b. Diagnostics -- reports WHICH spreadsheet this script is bound to and
@@ -132,6 +147,16 @@ function doPost(e) {
 
     var contents = JSON.parse(rawData);
     var action = contents.action || "registerStudent";
+
+    if (!keyAccepted(contents.key)) {
+      return deniedResponse();
+    }
+
+    var ssPost = SpreadsheetApp.getActiveSpreadsheet();
+
+    if (action === "authStaff") {
+      return authenticateStaff(ssPost, contents.username, contents.password);
+    }
     var ss = SpreadsheetApp.getActiveSpreadsheet();
 
     if (action === "registerStudent") {
@@ -199,6 +224,40 @@ function getOrCreateRegistrationsSheet(ss) {
     try { sheet.autoResizeColumns(1, 12); } catch(e) {}
   }
   return sheet;
+}
+
+/**
+ * Checks a username and password against the Staff_Accounts tab.
+ * Shared by doGet and doPost -- the website sends this as a POST so the
+ * password stays out of URLs, proxy logs and execution history.
+ */
+function authenticateStaff(ss, username, password) {
+  var user = String(username || "").trim();
+  var pass = String(password || "").trim();
+
+  var staffSheet = getOrCreateStaffSheet(ss);
+  var staffData = staffSheet.getDataRange().getValues();
+
+  // Bootstrap login, only while the tab holds nothing but headers. Adding a
+  // real row disables it. Change this password in the sheet immediately.
+  if (staffData.length <= 1) {
+    if (user === "admin" && pass === "snhs2026") {
+      return jsonResponse({ status: "success", authorized: true, role: "Administrator", name: "School Registrar" });
+    }
+  }
+
+  for (var k = 1; k < staffData.length; k++) {
+    var rowUser = String(staffData[k][0] || "").trim();
+    var rowPass = String(staffData[k][1] || "").trim();
+    var rowRole = String(staffData[k][2] || "Staff").trim();
+    var rowName = String(staffData[k][3] || rowUser).trim();
+
+    if (rowUser.toLowerCase() === user.toLowerCase() && rowPass === pass) {
+      return jsonResponse({ status: "success", authorized: true, role: rowRole, name: rowName });
+    }
+  }
+
+  return jsonResponse({ status: "error", authorized: false, message: "Invalid username or password." });
 }
 
 /**

@@ -32,11 +32,42 @@ module.exports = async function (t) {
     t('auto-sync enabled', app.SheetsSync.config.autoSync === true);
   }
 
-  t.section('a write that lands is confirmed by read-back');
+  t.section('registration goes through the proxy');
+  {
+    const calls = [];
+    const app = await boot({
+      fetch: (u, o) => {
+        calls.push({ url: String(u), body: o && o.body ? JSON.parse(o.body) : null });
+        return Promise.resolve({ ok: true, status: 200, json: async () => ({ status: 'success', message: 'saved' }) });
+      }
+    });
+    app.clearToasts();
+    const ok = await app.SheetsSync.sendStudentToSheet({ refCode: 'SNHS-REG-TEST-1', lrn: '1', fullName: 'A' });
+    t('returns true', ok === true);
+    t('posted to /api/sheets', calls[0] && calls[0].url.indexOf('/api/sheets') >= 0, calls[0] && calls[0].url);
+    t('action in the body', calls[0] && calls[0].body.action === 'registerStudent');
+    t('no read-back needed', calls.length === 1, String(calls.length));
+    t('success reported', app.toasts().some(x => /saved to the Google Sheet/i.test(x)), JSON.stringify(app.toasts()));
+  }
+
+  t.section('proxy reports a rejected write');
+  {
+    const app = await boot({
+      fetch: () => Promise.resolve({ ok: true, status: 200, json: async () => ({ status: 'error', message: 'bad key' }) })
+    });
+    app.clearToasts();
+    const ok = await app.SheetsSync.sendStudentToSheet({ refCode: 'SNHS-REG-TEST-2', lrn: '2', fullName: 'B' });
+    t('returns false', ok === false);
+    t('reason surfaced', app.toasts().some(x => /rejected it/i.test(x)), JSON.stringify(app.toasts()));
+  }
+
+  t.section('legacy fallback still confirms by read-back');
   {
     const rows = [];
     const app = await boot({
       fetch: (u, o) => {
+        const url = String(u);
+        if (url.indexOf('/api/sheets') >= 0) return Promise.resolve({ ok: false, status: 404, json: async () => ({}) });
         if (o && o.method === 'POST') {
           rows.push(JSON.parse(o.body).student.refCode);
           return Promise.reject(new Error('opaque redirect'));
@@ -45,21 +76,23 @@ module.exports = async function (t) {
       }
     });
     app.clearToasts();
-    const ok = await app.SheetsSync.sendStudentToSheet({ refCode: 'SNHS-REG-TEST-1', lrn: '1', fullName: 'A' });
-    t('returns true', ok === true);
+    const ok = await app.SheetsSync.sendStudentToSheet({ refCode: 'SNHS-REG-TEST-3', lrn: '3', fullName: 'C' });
+    t('returns true via fallback', ok === true);
     t('success reported', app.toasts().some(x => /saved to the Google Sheet/i.test(x)), JSON.stringify(app.toasts()));
   }
 
-  t.section('a write that vanishes is reported');
+  t.section('legacy fallback reports a vanished write');
   {
     const app = await boot({
       fetch: (u, o) => {
+        const url = String(u);
+        if (url.indexOf('/api/sheets') >= 0) return Promise.resolve({ ok: false, status: 404, json: async () => ({}) });
         if (o && o.method === 'POST') return Promise.reject(new Error('opaque redirect'));
         return Promise.resolve({ ok: true, json: async () => ({ status: 'success', students: [] }) });
       }
     });
     app.clearToasts();
-    const ok = await app.SheetsSync.sendStudentToSheet({ refCode: 'SNHS-REG-TEST-2', lrn: '2', fullName: 'B' });
+    const ok = await app.SheetsSync.sendStudentToSheet({ refCode: 'SNHS-REG-TEST-4', lrn: '4', fullName: 'D' });
     t('returns false', ok === false);
     t('failure surfaced', app.toasts().some(x => /did NOT reach the Google Sheet/i.test(x)), JSON.stringify(app.toasts()));
   }

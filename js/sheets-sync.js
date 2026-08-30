@@ -133,9 +133,61 @@ function getOrCreateSheet(ss, name) {
 
   // Initialize
   init() {
+    try { this.staffToken = localStorage.getItem('snhs_staff_token') || null; } catch (e) {}
     this.loadConfig();
     this.bindEvents();
     this.updateStatusIndicator();
+  },
+
+  // Server-side proxy. It holds the shared key and the /exec URL, so neither
+  // ships to the browser. Set to null once we learn it is not deployed, so a
+  // static-only hosting setup does not retry a 404 on every call.
+  proxyUrl: '/api/sheets',
+  proxyAvailable: true,
+  staffToken: null,
+
+  // Calls the proxy. Resolves { ok, data } on success, or { ok:false,
+  // unavailable:true } when the proxy is simply not deployed, which tells the
+  // caller to fall back to the legacy direct-to-Apps-Script path.
+  async viaProxy(action, payload) {
+    if (!this.proxyAvailable || !this.proxyUrl) return { ok: false, unavailable: true };
+
+    try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (this.staffToken) headers['Authorization'] = 'Bearer ' + this.staffToken;
+
+      const res = await fetch(this.proxyUrl, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(Object.assign({ action: action }, payload || {}))
+      });
+
+      if (res.status === 404) {
+        this.proxyAvailable = false;
+        console.warn('Sheets proxy not deployed; falling back to the direct Apps Script URL.');
+        return { ok: false, unavailable: true };
+      }
+
+      const data = await res.json().catch(() => null);
+
+      if (res.status === 501) {
+        this.proxyAvailable = false;
+        console.warn('Sheets proxy not configured (' + ((data && data.hint) || 'missing environment variables') + '); falling back to the direct URL.');
+        return { ok: false, unavailable: true };
+      }
+
+      if (res.status === 401) {
+        this.staffToken = null;
+        try { localStorage.removeItem('snhs_staff_token'); } catch (e) {}
+        return { ok: false, unauthorized: true, data: data };
+      }
+
+      if (!res.ok) return { ok: false, data: data, status: res.status };
+      return { ok: true, data: data };
+    } catch (err) {
+      console.warn('Sheets proxy request failed:', err);
+      return { ok: false, error: err };
+    }
   },
 
   loadConfig() {
@@ -300,6 +352,26 @@ function getOrCreateSheet(ss, name) {
         }
       };
 
+      // Preferred path: the proxy talks to Apps Script server-to-server, where
+      // there is no CORS, so the script's real answer is readable and no
+      // read-back guess is needed. It also means a student's browser never
+      // gets an endpoint that can read the sheet.
+      const viaProxy = await this.viaProxy('registerStudent', { student: payload.student });
+      if (viaProxy.ok) {
+        const okData = viaProxy.data;
+        if (okData && okData.status === 'success') {
+          this.config.lastSyncTime = new Date().toISOString();
+          App.showToast('Registration saved to the Google Sheet.', 'success');
+          return true;
+        }
+        App.showToast('Saved locally, but the Google Sheet rejected it: ' + ((okData && okData.message) || 'unknown reason'), 'error');
+        return false;
+      }
+      if (!viaProxy.unavailable) {
+        App.showToast('Saved locally, but the Google Sheet could not be reached.', 'error');
+        return false;
+      }
+
       // Apps Script answers a POST with a redirect to a googleusercontent.com
       // URL that carries no CORS headers, so this fetch rejects even when the
       // row was written. The rejection therefore tells us nothing and must be
@@ -407,6 +479,32 @@ function getOrCreateSheet(ss, name) {
   // There is deliberately no local credential fallback: shipping passwords in
   // client-side JS would expose them to anyone who opens DevTools.
   async authenticateStaff(username, password) {
+    // Preferred path: the proxy posts the credentials server-side and returns
+    // a signed session token, so the password never appears in a URL.
+    const viaProxy = await this.viaProxy('authStaff', { username: username, password: password });
+
+    if (viaProxy.ok) {
+      const data = viaProxy.data;
+      if (data && data.authorized) {
+        this.lastStaffRole = data.role || 'Staff';
+        this.lastStaffName = data.name || username;
+        this.staffToken = data.token || null;
+        try {
+          if (this.staffToken) localStorage.setItem('snhs_staff_token', this.staffToken);
+        } catch (e) {}
+        return true;
+      }
+      return false;
+    }
+
+    if (!viaProxy.unavailable) {
+      App.showToast('Could not reach the staff account service. Check your connection.', 'error');
+      return false;
+    }
+
+    // Fallback for a static-only deployment, kept so an unconfigured site still
+    // works. This sends the password as a query parameter, which is why the
+    // proxy exists -- configure it and this path stops being used.
     if (!this.config.webhookUrl) {
       App.showToast('Staff accounts are stored in Google Sheets. Set the Webhook URL in Settings first.', 'error');
       return false;
