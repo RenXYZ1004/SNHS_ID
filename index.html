@@ -1411,28 +1411,22 @@
       </div>
       <div class="modal-body">
         <p class="login-instruction-text">
-          Authorized personnel access for ID card batch generation, student approval, and A4 print operations. Connected to Google Sheets staff accounts.
+          Authorized personnel only. Accounts are managed in the <strong>Staff_Accounts</strong> tab of the school's Google Sheet.
         </p>
 
         <form id="staff-login-form" autocomplete="off" onsubmit="return false;">
           <div class="form-group">
             <label for="login-username">Staff Username</label>
-            <input type="text" id="login-username" value="admin" placeholder="e.g. admin" required>
+            <input type="text" id="login-username" placeholder="Enter your staff username" autocomplete="username" required>
           </div>
           <div class="form-group">
             <label for="login-password">Password</label>
-            <input type="password" id="login-password" value="snhs2026" placeholder="Enter password" required>
-          </div>
-          <div class="demo-login-notice">
-            <i class="fa-solid fa-lightbulb"></i> <span>Demo Login: <code>admin</code> / <code>snhs2026</code></span>
+            <input type="password" id="login-password" placeholder="Enter your password" autocomplete="current-password" required>
           </div>
         </form>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" id="btn-cancel-staff-login">Cancel</button>
-        <button class="btn btn-outline" id="btn-demo-quick-login">
-          <i class="fa-solid fa-bolt"></i> 1-Click Demo Login
-        </button>
         <button class="btn btn-primary" id="btn-submit-staff-login">
           <i class="fa-solid fa-right-to-bracket"></i> Login
         </button>

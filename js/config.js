@@ -28,27 +28,13 @@ const APP_CONFIG = {
   // =========================================================================
   // 2. STAFF & ADMINISTRATOR CREDENTIALS
   // =========================================================================
-  // You can define authorized staff logins here or sync them from your Google Sheet.
-  staffCredentials: [
-    {
-      username: "admin",
-      password: "snhs2026",
-      role: "Super Admin / Registrar",
-      name: "Office of the Registrar"
-    },
-    {
-      username: "faculty",
-      password: "faculty2026",
-      role: "Faculty Staff",
-      name: "Faculty Evaluator"
-    },
-    {
-      username: "principal",
-      password: "principal2026",
-      role: "School Head",
-      name: "Dr. Emma R. Santos, CESO V"
-    }
-  ],
+  // Staff accounts are NOT stored here. Anything in this file is downloaded by
+  // every visitor's browser, so passwords placed here would be public.
+  //
+  // Accounts live in the "Staff_Accounts" tab of the Google Sheet, with columns:
+  //   Username | Password | Role | FullName
+  // The Apps Script creates that tab on the first login attempt. Edit the rows
+  // there to add, change or remove staff logins -- no redeploy needed.
 
   // =========================================================================
   // 3. SCHOOL & INSTITUTION BRANDING DEFAULTS

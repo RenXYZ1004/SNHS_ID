@@ -354,16 +354,13 @@ function getOrCreateSheet(ss, name) {
   },
 
   // Authenticate Staff via Google Sheet or config.js credentials
+  // Staff accounts live in the Staff_Accounts tab of the Google Sheet.
+  // There is deliberately no local credential fallback: shipping passwords in
+  // client-side JS would expose them to anyone who opens DevTools.
   async authenticateStaff(username, password) {
     if (!this.config.webhookUrl) {
-      // Check APP_CONFIG.staffCredentials first
-      if (window.APP_CONFIG && Array.isArray(window.APP_CONFIG.staffCredentials)) {
-        const match = window.APP_CONFIG.staffCredentials.find(
-          c => c.username.toLowerCase() === username.toLowerCase() && c.password === password
-        );
-        if (match) return true;
-      }
-      return (username === 'admin' || username === 'staff') && (password === 'snhs2026' || password === '123456');
+      App.showToast('Staff accounts are stored in Google Sheets. Set the Webhook URL in Settings first.', 'error');
+      return false;
     }
 
     try {
@@ -372,21 +369,16 @@ function getOrCreateSheet(ss, name) {
       const data = await res.json();
 
       if (data && data.status === 'success' && data.authorized) {
+        this.lastStaffRole = data.role || 'Staff';
+        this.lastStaffName = data.name || username;
         return true;
       }
-    } catch(e) {
-      console.warn('Sheets auth check fell back to local credentials:', e);
+      return false;
+    } catch (e) {
+      console.warn('Staff auth request failed:', e);
+      App.showToast('Could not reach the staff account sheet. Check your connection.', 'error');
+      return false;
     }
-
-    // Fallback: check APP_CONFIG.staffCredentials first, then default
-    if (window.APP_CONFIG && Array.isArray(window.APP_CONFIG.staffCredentials)) {
-      const match = window.APP_CONFIG.staffCredentials.find(
-        c => c.username.toLowerCase() === username.toLowerCase() && c.password === password
-      );
-      if (match) return true;
-    }
-
-    return (username === 'admin' || username === 'staff') && (password === 'snhs2026' || password === '123456');
   }
 };
 

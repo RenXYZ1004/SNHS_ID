@@ -733,43 +733,41 @@ const Portal = {
     const btnCloseLogin = document.getElementById('btn-close-staff-login');
     const btnCancelLogin = document.getElementById('btn-cancel-staff-login');
     const btnSubmitLogin = document.getElementById('btn-submit-staff-login');
-    const btnDemoLogin = document.getElementById('btn-demo-quick-login');
     const btnLogout = document.getElementById('btn-staff-logout');
 
     if (btnOpenLogin) btnOpenLogin.addEventListener('click', () => this.openStaffLoginModal());
     if (btnCloseLogin) btnCloseLogin.addEventListener('click', () => this.closeStaffLoginModal());
     if (btnCancelLogin) btnCancelLogin.addEventListener('click', () => this.closeStaffLoginModal());
 
-    // 1-Click Demo Login
-    if (btnDemoLogin) {
-      btnDemoLogin.addEventListener('click', () => {
-        this.setStaffLoggedIn(true);
-        this.closeStaffLoginModal();
-        this.switchView('staff-dashboard');
-      });
-    }
-
     // Submit Staff Login Form with Google Sheets credential check
     if (btnSubmitLogin) {
       btnSubmitLogin.addEventListener('click', async () => {
         const u = document.getElementById('login-username')?.value.trim();
-        const p = document.getElementById('login-password')?.value.trim();
+        const p = document.getElementById('login-password')?.value;
 
+        if (!u || !p) {
+          App.showToast('Enter both your staff username and password.', 'error');
+          return;
+        }
+
+        btnSubmitLogin.disabled = true;
         App.showToast('Verifying staff credentials...', 'info');
 
         let isAuth = false;
-        if (window.SheetsSync) {
+        try {
           isAuth = await SheetsSync.authenticateStaff(u, p);
-        } else {
-          isAuth = (u === 'admin' || u === 'staff') && (p === 'snhs2026' || p === '123456');
+        } finally {
+          btnSubmitLogin.disabled = false;
         }
 
         if (isAuth) {
+          const pwField = document.getElementById('login-password');
+          if (pwField) pwField.value = '';
           this.setStaffLoggedIn(true);
           this.closeStaffLoginModal();
           this.switchView('staff-dashboard');
         } else {
-          App.showToast('Invalid credentials. Use demo login: admin / snhs2026', 'error');
+          App.showToast('Invalid username or password.', 'error');
         }
       });
     }
