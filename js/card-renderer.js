@@ -23,7 +23,7 @@ const CardRenderer = {
 
     emergencyContact: 'Maria Dela Cruz',
     emergencyPhone: '0917-123-4567',
-    address: 'Brgy. San Nicolas, Pasig City',
+    address: 'Brgy. Salvacion, Busuanga, Palawan',
 
     principalName: 'DR. EMMA R. SANTOS, CESO V',
     principalTitle: 'Secondary School Principal IV',
@@ -35,9 +35,9 @@ const CardRenderer = {
     // Institution Branding
     countryText: 'REPUBLIC OF THE PHILIPPINES',
     deptText: 'DEPARTMENT OF EDUCATION',
-    regionText: 'REGION IV-A CALABARZON',
-    schoolName: 'SAN NICOLAS NATIONAL HIGH SCHOOL',
-    schoolAddress: 'San Nicolas, Pasig City • School ID: 301425',
+    regionText: 'REGION IV-B Mimaropa',
+    schoolName: 'Salvacion National High School',
+    schoolAddress: 'San Salvacion, Busuanga • School ID: 301734',
     leftLogoUrl: '',
     rightLogoUrl: '',
 

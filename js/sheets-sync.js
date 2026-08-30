@@ -330,7 +330,7 @@ function getOrCreateSheet(ss, name) {
               trackStrand: row.TrackStrand || 'Academic Track',
               emergencyContact: row.EmergencyContact || 'Guardian',
               emergencyPhone: String(row.EmergencyPhone || '').replace(/^'/, ''),
-              address: row.Address || 'Pasig City',
+              address: row.Address || 'Busuanga, Palawan',
               bloodType: row.BloodType || 'O+',
               birthDate: row.BirthDate || '2008-05-14',
               dateRegistered: row.Timestamp ? row.Timestamp.split('T')[0] : '2026-08-30',

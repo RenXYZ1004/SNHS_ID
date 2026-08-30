@@ -161,7 +161,7 @@ const BulkGenerator = {
         trackStrand: item.TrackStrand || item.trackstrand || item['Track & Strand'] || item.Strand || 'Academic Track - STEM',
         emergencyContact: item.EmergencyContact || item.emergencycontact || item['Guardian Name'] || item['Parent / Guardian'] || 'Maria Santos',
         emergencyPhone: item.EmergencyPhone || item.emergencyphone || item['Emergency Contact'] || item['Contact Number'] || '0917-000-0000',
-        address: item.Address || item.address || item['Home Address'] || 'Pasig City, Metro Manila',
+        address: item.Address || item.address || item['Home Address'] || 'Busuanga, Palawan, Metro Manila',
         bloodType: item.BloodType || item.bloodtype || item['Blood Type'] || 'O+',
         birthDate: item.BirthDate || item.birthdate || item.DOB || '2008-05-14',
         idNumber: item.IDNumber || item.idnumber || item['Card ID'] || `SNHS-2026-${String(index + 1).padStart(3, '0')}`,
@@ -199,7 +199,7 @@ const BulkGenerator = {
       trackStrand: s.strand,
       emergencyContact: 'Parent of ' + s.name.split(' ')[0],
       emergencyPhone: `0917-888-000${idx + 1}`,
-      address: 'Brgy. San Nicolas, Pasig City',
+      address: 'Brgy. Salvacion, Busuanga, Palawan',
       bloodType: s.blood,
       birthDate: '2008-08-15',
       idNumber: `SNHS-2026-${String(idx + 1).padStart(3, '0')}`,
@@ -226,7 +226,7 @@ const BulkGenerator = {
       trackStrand: 'Academic Track',
       emergencyContact: 'Guardian Name',
       emergencyPhone: '0917-000-0000',
-      address: 'Pasig City',
+      address: 'Busuanga, Palawan',
       bloodType: 'O+',
       birthDate: '2008-01-01',
       idNumber: `SNHS-2026-${String(idx).padStart(3, '0')}`,
@@ -392,9 +392,9 @@ const BulkGenerator = {
   // Download Sample CSV Template
   downloadSampleCSV() {
     const csvContent = `LRN,FullName,GradeSection,TrackStrand,EmergencyContact,EmergencyPhone,Address,BloodType,BirthDate,IDNumber
-109283746501,Juan M. Dela Cruz,Grade 12 - STEM-A,Academic Track - STEM,Maria Dela Cruz,0917-123-4567,"Brgy. San Nicolas, Pasig City",O+,2008-05-14,SNHS-2026-001
-109283746502,Angelica R. Santos,Grade 12 - ABM-B,Academic Track - ABM,Roberto Santos,0918-234-5678,"Brgy. Kapasigan, Pasig City",A+,2008-08-22,SNHS-2026-002
-109283746503,Mark Anthony D. Reyes,Grade 11 - HUMSS-1,Academic Track - HUMSS,Elena Reyes,0920-345-6789,"Brgy. Bagong Ilog, Pasig City",B+,2009-01-30,SNHS-2026-003`;
+109283746501,Juan M. Dela Cruz,Grade 12 - STEM-A,Academic Track - STEM,Maria Dela Cruz,0917-123-4567,"Brgy. Salvacion, Busuanga, Palawan",O+,2008-05-14,SNHS-2026-001
+109283746502,Angelica R. Santos,Grade 12 - ABM-B,Academic Track - ABM,Roberto Santos,0918-234-5678,"Busuanga, Palawan",A+,2008-08-22,SNHS-2026-002
+109283746503,Mark Anthony D. Reyes,Grade 11 - HUMSS-1,Academic Track - HUMSS,Elena Reyes,0920-345-6789,"Busuanga, Palawan",B+,2009-01-30,SNHS-2026-003`;
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     saveAs(blob, 'snhs_students_template.csv');

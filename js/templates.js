@@ -13,10 +13,10 @@ const Templates = {
       secondary: '#134074',
       accent: '#d4af37',
       bgType: 'guilloche-blue',
-      schoolName: 'SAN NICOLAS NATIONAL HIGH SCHOOL',
-      schoolAddress: 'San Nicolas, Pasig City • School ID: 301425',
+      schoolName: 'Salvacion National High School',
+      schoolAddress: 'San Salvacion, Busuanga • School ID: 301734',
       deptText: 'DEPARTMENT OF EDUCATION',
-      regionText: 'REGION IV-A CALABARZON'
+      regionText: 'REGION IV-B Mimaropa'
     },
     'emerald-poly': {
       name: 'Emerald Polytechnic',
@@ -24,8 +24,8 @@ const Templates = {
       secondary: '#047857',
       accent: '#10b981',
       bgType: 'guilloche-emerald',
-      schoolName: 'SAN NICOLAS POLYTECHNIC INSTITUTE',
-      schoolAddress: 'Academic Zone, Pasig City • Inst ID: 408891',
+      schoolName: 'SALVACION POLYTECHNIC INSTITUTE',
+      schoolAddress: 'Academic Zone, Busuanga • Inst ID: 408891',
       deptText: 'COMMISSION ON HIGHER EDUCATION',
       regionText: 'NATIONAL CAPITAL REGION'
     },
@@ -35,10 +35,10 @@ const Templates = {
       secondary: '#b91c1c',
       accent: '#f59e0b',
       bgType: 'guilloche-crimson',
-      schoolName: 'SAN NICOLAS STATE UNIVERSITY',
+      schoolName: 'SALVACION STATE UNIVERSITY',
       schoolAddress: 'Main Campus, Rizal District • Org ID: 501239',
       deptText: 'STATE UNIVERSITIES & COLLEGES',
-      regionText: 'DIVISION OF PASIG'
+      regionText: 'DIVISION OF PALAWAN'
     },
     'royal-violet': {
       name: 'Royal Science High',
@@ -46,10 +46,10 @@ const Templates = {
       secondary: '#6b21a8',
       accent: '#a855f7',
       bgType: 'guilloche-violet',
-      schoolName: 'SAN NICOLAS SCIENCE HIGH SCHOOL',
+      schoolName: 'SALVACION SCIENCE HIGH SCHOOL',
       schoolAddress: 'Special Science Complex • School ID: 301499',
       deptText: 'DEPARTMENT OF SCIENCE & TECH',
-      regionText: 'REGION IV-A CALABARZON'
+      regionText: 'REGION IV-B Mimaropa'
     },
     'cyber-dark': {
       name: 'Tech & ICT Modern',
@@ -57,8 +57,8 @@ const Templates = {
       secondary: '#1e293b',
       accent: '#38bdf8',
       bgType: 'guilloche-dark',
-      schoolName: 'SAN NICOLAS INSTITUTE OF TECHNOLOGY',
-      schoolAddress: 'Tech Corridor, Pasig City • School ID: 902144',
+      schoolName: 'SALVACION INSTITUTE OF TECHNOLOGY',
+      schoolAddress: 'Tech Corridor, Busuanga • School ID: 902144',
       deptText: 'TECHNICAL EDUCATION & SKILLS AUTH.',
       regionText: 'TESDA ACCREDITED'
     },
@@ -68,10 +68,10 @@ const Templates = {
       secondary: '#334155',
       accent: '#2563eb',
       bgType: 'guilloche-minimal',
-      schoolName: 'SAN NICOLAS ACADEMY',
-      schoolAddress: 'Metro Manila, Philippines • ID: 104822',
+      schoolName: 'SALVACION ACADEMY',
+      schoolAddress: 'Palawan, Philippines • ID: 104822',
       deptText: 'DEPARTMENT OF EDUCATION',
-      regionText: 'DIVISION OF PASIG'
+      regionText: 'DIVISION OF PALAWAN'
     }
   },
 

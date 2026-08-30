@@ -57,7 +57,7 @@ const APP_CONFIG = {
     country: "REPUBLIC OF THE PHILIPPINES",
     department: "DEPARTMENT OF EDUCATION",
     region: "REGION IV-B Mimaropa",
-    division: "SCHOOLS DIVISION OF PASIG CITY",
+    division: "SCHOOLS DIVISION OF PALAWAN",
     name: "Salvacion National High School",
     address: "San Salvacion, Busuanga • School ID: 301734",
     schoolYear: "S.Y. 2025 - 2026",

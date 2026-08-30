@@ -7,7 +7,7 @@ A full-featured, automated ID Card Generator and Batch Issuance Studio built for
 ## 🌟 Key Portals & Features
 
 ### 1. 🏠 Main Menu / School Portal
-- Welcoming landing menu for **San Nicolas National High School**.
+- Welcoming landing menu for **Salvacion National High School**.
 - Clear navigation between the **Student Self-Registration Portal** and the **Staff ID Studio**.
 - Real-time registered student counter and system status.
 
