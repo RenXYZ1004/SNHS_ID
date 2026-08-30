@@ -48,6 +48,35 @@ const App = {
     this.showToast('Welcome to SNHS ID & Registration Portal', 'info');
   },
 
+  // Largest image a user may pick. Checked before reading the file, so an
+  // oversized photo is rejected instantly instead of after a slow base64 read.
+  MAX_UPLOAD_BYTES: 5 * 1024 * 1024,
+
+  formatBytes(bytes) {
+    if (bytes >= 1048576) return (bytes / 1048576).toFixed(1) + ' MB';
+    if (bytes >= 1024) return Math.round(bytes / 1024) + ' KB';
+    return bytes + ' bytes';
+  },
+
+  validateImageFile(file) {
+    if (!file) return false;
+
+    if (file.type && file.type.indexOf('image/') !== 0) {
+      this.showToast('That file is not an image. Please choose a JPG or PNG.', 'error');
+      return false;
+    }
+
+    if (file.size > this.MAX_UPLOAD_BYTES) {
+      this.showToast(
+        `That image is ${this.formatBytes(file.size)}. Maximum is ${this.formatBytes(this.MAX_UPLOAD_BYTES)} - please choose a smaller photo.`,
+        'error'
+      );
+      return false;
+    }
+
+    return true;
+  },
+
   // Toast Notification Dispatcher
   showToast(message, type = 'info') {
     const container = document.getElementById('toast-container');
@@ -341,7 +370,7 @@ const App = {
       uploadBtn.addEventListener('click', () => fileInput.click());
       fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
-        if (file) {
+        if (file && App.validateImageFile(file)) {
           const reader = new FileReader();
           reader.onload = (ev) => this.openCropperModal(ev.target.result);
           reader.readAsDataURL(file);
@@ -396,7 +425,7 @@ const App = {
       uploadSigBtn.addEventListener('click', () => sigFileInput.click());
       sigFileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
-        if (file) {
+        if (file && App.validateImageFile(file)) {
           const reader = new FileReader();
           reader.onload = (ev) => {
             CardRenderer.state.signatureUrl = ev.target.result;
@@ -743,7 +772,7 @@ const App = {
       btnLogoLeft.addEventListener('click', () => fileLogoLeft.click());
       fileLogoLeft.addEventListener('change', (e) => {
         const file = e.target.files[0];
-        if (file) {
+        if (file && App.validateImageFile(file)) {
           const reader = new FileReader();
           reader.onload = (ev) => {
             CardRenderer.state.leftLogoUrl = ev.target.result;
@@ -763,7 +792,7 @@ const App = {
       btnLogoRight.addEventListener('click', () => fileLogoRight.click());
       fileLogoRight.addEventListener('change', (e) => {
         const file = e.target.files[0];
-        if (file) {
+        if (file && App.validateImageFile(file)) {
           const reader = new FileReader();
           reader.onload = (ev) => {
             CardRenderer.state.rightLogoUrl = ev.target.result;

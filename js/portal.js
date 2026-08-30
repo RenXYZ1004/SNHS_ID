@@ -386,7 +386,7 @@ const Portal = {
       btnPhotoUpload.addEventListener('click', () => photoInput.click());
       photoInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
-        if (file) {
+        if (file && App.validateImageFile(file)) {
           const reader = new FileReader();
           reader.onload = (ev) => App.openCropperModal(ev.target.result, 'student');
           reader.readAsDataURL(file);
@@ -416,7 +416,7 @@ const Portal = {
       btnRegUploadSig.addEventListener('click', () => sigInput.click());
       sigInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
-        if (file) {
+        if (file && App.validateImageFile(file)) {
           const reader = new FileReader();
           reader.onload = (ev) => {
             this.studentForm.signatureUrl = ev.target.result;
@@ -619,22 +619,47 @@ const Portal = {
     BulkGenerator.updateCounter();
 
     this.lastSubmittedRecord = newRecord;
-    this.openReceiptModal(newRecord);
 
-    // Store the photo in Vercel Blob and record its URL, then sync. The card
-    // keeps rendering from the local data URL either way, so a failed or
+    // Store the photo in Vercel Blob before showing the receipt, so the submit
+    // button can report progress rather than the upload happening invisibly.
+    // The card renders from the local data URL either way, so a failed or
     // unconfigured upload never blocks a registration.
     if (window.BlobStore && this.studentForm.photoUrl) {
-      const hostedUrl = await BlobStore.uploadPhoto(this.studentForm.photoUrl, refCode);
-      if (hostedUrl) {
-        newRecord.hostedPhotoUrl = hostedUrl;
-        this.saveDatabase();
+      this.setSubmitBusy(true, 'Uploading photo...');
+      try {
+        const hostedUrl = await BlobStore.uploadPhoto(this.studentForm.photoUrl, refCode);
+        if (hostedUrl) {
+          newRecord.hostedPhotoUrl = hostedUrl;
+          this.saveDatabase();
+          App.showToast('Photo uploaded to secure storage.', 'success');
+        }
+      } finally {
+        this.setSubmitBusy(false);
       }
     }
+
+    this.openReceiptModal(newRecord);
 
     // 🚀 Send directly to Google Sheet in Cloud
     if (window.SheetsSync) {
       SheetsSync.sendStudentToSheet(newRecord);
+    }
+  },
+
+  // Spinner + locked submit button while a registration is being uploaded.
+  setSubmitBusy(busy, label) {
+    const btn = document.getElementById('btn-submit-registration');
+    if (!btn) return;
+
+    if (busy) {
+      if (this._submitBtnHtml === undefined) this._submitBtnHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.classList.add('is-busy');
+      btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> <span>' + (label || 'Working...') + '</span>';
+    } else {
+      btn.disabled = false;
+      btn.classList.remove('is-busy');
+      if (this._submitBtnHtml !== undefined) btn.innerHTML = this._submitBtnHtml;
     }
   },
 
