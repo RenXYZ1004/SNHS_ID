@@ -10,3 +10,8 @@ yarn-error.log*
 # OS Files
 .DS_Store
 Thumbs.db
+
+# Environment / secrets -- never commit a real token
+.env
+.env.*
+!.env.example
