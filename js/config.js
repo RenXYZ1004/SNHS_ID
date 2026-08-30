@@ -13,7 +13,7 @@ const APP_CONFIG = {
   googleSheets: {
     // Paste your deployed Google Apps Script Web App URL here
     // Example: "https://script.google.com/macros/s/AKfycbx.../exec"
-    webhookUrl: "https://script.google.com/macros/s/AKfycbzh0W6WK7-wVAhXr6ImDC5yCX6HFoT0KWylJDuQDVkUyhI__u-lyo_URxbMOJPh6RBs0A/exec",
+    webhookUrl: "https://script.google.com/macros/s/AKfycbwVQSD6h7VBcr_MjvC_UQxnuOFxQtOYCgzmI9td0zEkySdHD9NhrdRiv9TVBSNCyEZh4A/exec",
 
     // (Optional) Direct link to your Google Sheet for quick staff reference
     sheetUrl: "https://docs.google.com/spreadsheets/d/17ye97lIW2Fpgj9YptdNAJd8fiMIxpMr73ktlbCjg61A/edit?usp=sharing",
