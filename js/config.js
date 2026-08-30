@@ -54,8 +54,8 @@ const APP_CONFIG = {
     
     // Principal Details (Printed on Back of ID)
     principal: {
-      name: "DR. EMMA R. SANTOS, CESO V",
-      title: "Secondary School Principal IV"
+      name: "Evelen B. Nadado",
+      title: "School Principal"
     },
 
     // Terms and Notice printed on Back of ID
