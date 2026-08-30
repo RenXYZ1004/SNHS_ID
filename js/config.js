@@ -56,10 +56,10 @@ const APP_CONFIG = {
   school: {
     country: "REPUBLIC OF THE PHILIPPINES",
     department: "DEPARTMENT OF EDUCATION",
-    region: "REGION IV-A CALABARZON",
+    region: "REGION IV-B Mimaropa",
     division: "SCHOOLS DIVISION OF PASIG CITY",
-    name: "SAN NICOLAS NATIONAL HIGH SCHOOL",
-    address: "San Nicolas, Pasig City • School ID: 301425",
+    name: "Salvacion National High School",
+    address: "San Salvacion, Busuanga • School ID: 301734",
     schoolYear: "S.Y. 2025 - 2026",
     
     // Principal Details (Printed on Back of ID)
@@ -69,7 +69,7 @@ const APP_CONFIG = {
     },
 
     // Terms and Notice printed on Back of ID
-    terms: "This card certifies that the bearer whose name, photo, and details appear hereon is a bonafide student of San Nicolas National High School. Always wear this ID while on school premises. In case of emergency or loss, please contact the guardian or report immediately to the Office of the Principal."
+    terms: "This card certifies that the bearer whose name, photo, and details appear hereon is a bonafide student of Salvacion National High School. Always wear this ID while on school premises. In case of emergency or loss, please contact the guardian or report immediately to the Office of the Principal."
   },
 
   // =========================================================================

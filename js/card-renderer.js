@@ -30,7 +30,7 @@ const CardRenderer = {
 
     // Back-of-card terms block (editable)
     termsTitle: 'TERMS & CONDITIONS / IMPORTANT NOTICE',
-    termsText: 'This card certifies that the bearer whose name and photo appear on this card is a bonafide student of San Nicolas National High School. Always wear this ID while on school premises. In case of loss, report immediately to the Office of the Principal.',
+    termsText: 'This card certifies that the bearer whose name and photo appear on this card is a bonafide student of Salvacion National High School. Always wear this ID while on school premises. In case of loss, report immediately to the Office of the Principal.',
 
     // Institution Branding
     countryText: 'REPUBLIC OF THE PHILIPPINES',
