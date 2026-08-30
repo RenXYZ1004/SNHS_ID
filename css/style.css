@@ -915,6 +915,16 @@ body {
   gap: 0.75rem;
 }
 
+.form-section-note {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: -0.35rem 0 0.85rem;
+  line-height: 1.45;
+}
+.form-section-note strong {
+  color: var(--text-main);
+}
+
 .flex-1 { flex: 1; }
 .flex-2 { flex: 2; }
 .flex-3 { flex: 3; }
@@ -1202,6 +1212,9 @@ textarea:focus {
 }
 
 .cards-wrapper {
+  /* --fit is set by the responsive breakpoints; --zoom by the zoom buttons.
+     Composing them keeps zoom working on small screens. */
+  transform: scale(calc(var(--fit, 1) * var(--zoom, 1)));
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: center center;
   display: flex;
@@ -2683,6 +2696,137 @@ textarea:focus {
 @keyframes slideInRight {
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
+}
+
+
+/* ==========================================================================
+   RESPONSIVE LAYER — tablet & phone
+   Existing queries above handle grid collapse at 840–1100px. These add the
+   small-screen behaviour: stacked forms, scrollable nav, scaled cards.
+   ========================================================================== */
+
+/* Never let anything push the page sideways */
+html, body {
+  max-width: 100%;
+}
+body {
+  /* clip (not hidden) — hidden on html/body creates a scroll container and
+     would break the sticky .app-header */
+  overflow-x: clip;
+}
+img, canvas, svg, video {
+  max-width: 100%;
+}
+
+/* ---------- Tablet / small laptop ---------- */
+@media (max-width: 900px) {
+  .app-header {
+    height: auto;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    padding: 0.7rem 1rem;
+  }
+  .main-portal-nav {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .main-portal-nav::-webkit-scrollbar { display: none; }
+  .portal-nav-btn { white-space: nowrap; flex: 0 0 auto; }
+
+  .header-actions { gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end; }
+  .brand-subtitle { display: none; }
+
+  .nav-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .nav-tab { white-space: nowrap; flex: 0 0 auto; }
+
+  .wizard-progress-bar { padding: 0.85rem 1rem; gap: 0.75rem; }
+
+  .control-panel { max-height: none; }
+
+  .cards-wrapper { --fit: 0.92; }
+}
+
+/* ---------- Phone ---------- */
+@media (max-width: 640px) {
+  /* Stack every side-by-side field pair */
+  .form-row { flex-direction: column; gap: 0; }
+  .form-row > .form-group { width: 100%; }
+
+  .app-header { padding: 0.6rem 0.75rem; }
+  .brand-title { font-size: 1rem; }
+  .brand-icon { width: 34px; height: 34px; font-size: 1rem; }
+
+  .sheets-conn-indicator span { display: none; }
+
+  /* Step pills: keep the numbers, drop the descriptions */
+  .wizard-progress-bar {
+    padding: 0.7rem 0.5rem;
+    gap: 0.4rem;
+    justify-content: space-between;
+  }
+  .wizard-step-item .step-text span { display: none; }
+  .wizard-step-item .step-text strong { font-size: 0.72rem; }
+  .step-line { min-width: 12px; }
+
+  /* Wizard / stage buttons go full width so they're easy to hit */
+  .wizard-nav-bar { flex-direction: column-reverse; gap: 0.5rem; }
+  .wizard-nav-bar .btn { width: 100%; justify-content: center; }
+  .stage-footer-actions { flex-direction: column; }
+  .stage-footer-actions .btn { width: 100%; justify-content: center; }
+
+  .stage-toolbar { gap: 0.5rem; }
+  .toolbar-group { flex-wrap: wrap; }
+
+  /* Scale the fixed-size card down to fit a phone */
+  .cards-wrapper { --fit: 0.78; gap: 12px; }
+  .card-display-viewport { padding: 0.75rem 0.25rem; }
+  .mini-card-wrapper { transform: scale(0.8); }
+
+  /* Comfortable tap targets */
+  .btn, .nav-tab, .portal-nav-btn, .tool-btn {
+    min-height: 44px;
+  }
+  /* 16px inputs stop iOS Safari from zooming on focus */
+  input, select, textarea { font-size: 16px; }
+
+  .data-table { font-size: 0.75rem; }
+  .data-table th, .data-table td { padding: 0.5rem 0.6rem; white-space: nowrap; }
+
+  .modal-card { max-width: 100%; margin: 0 0.5rem; }
+  .modal-overlay { padding: 0.75rem; }
+  .modal-footer { flex-direction: column-reverse; gap: 0.5rem; }
+  .modal-footer .btn { width: 100%; justify-content: center; }
+
+  .reg-form-card, .control-panel, .settings-card, .portal-card { padding: 1rem; }
+}
+
+/* ---------- Small phone ---------- */
+@media (max-width: 400px) {
+  .cards-wrapper { --fit: 0.66; }
+  .brand-text { display: none; }
+  .wizard-step-item .step-text { display: none; }
+}
+
+/* Coarse pointers: don't rely on hover to reveal anything */
+@media (hover: none) {
+  .btn, .nav-tab, .portal-nav-btn, .tool-btn { -webkit-tap-highlight-color: transparent; }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* ==========================================================================

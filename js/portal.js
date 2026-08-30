@@ -299,8 +299,8 @@ const Portal = {
 
     // Update Step panels
     for (let i = 1; i <= 3; i++) {
-      const panel = document.getElementById(`wizard-panel-i`.replace('i', i));
-      const pill = document.getElementById(`wiz-step-pill-i`.replace('i', i));
+      const panel = document.getElementById(`wizard-panel-${i}`);
+      const pill = document.getElementById(`wiz-step-pill-${i}`);
       const isCurrent = i === stepNumber;
       const isPast = i < stepNumber;
 

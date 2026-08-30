@@ -28,6 +28,10 @@ const CardRenderer = {
     principalName: 'DR. EMMA R. SANTOS, CESO V',
     principalTitle: 'Secondary School Principal IV',
 
+    // Back-of-card terms block (editable)
+    termsTitle: 'TERMS & CONDITIONS / IMPORTANT NOTICE',
+    termsText: 'This card certifies that the bearer whose name and photo appear on this card is a bonafide student of San Nicolas National High School. Always wear this ID while on school premises. In case of loss, report immediately to the Office of the Principal.',
+
     // Institution Branding
     countryText: 'REPUBLIC OF THE PHILIPPINES',
     deptText: 'DEPARTMENT OF EDUCATION',
@@ -178,6 +182,9 @@ const CardRenderer = {
     setText('disp-em-dob', this.formatDate(this.state.birthDate));
     setText('disp-em-blood', this.state.bloodType || 'O+');
     setText('disp-em-lrn', this.state.lrn || '000000000000');
+
+    setText('disp-terms-title', this.state.termsTitle || 'TERMS & CONDITIONS');
+    setText('disp-terms-text', this.state.termsText || '');
 
     setText('disp-principal-name', (this.state.principalName || 'PRINCIPAL NAME').toUpperCase());
     setText('disp-principal-title', this.state.principalTitle || 'Secondary School Principal');
@@ -356,8 +363,8 @@ const CardRenderer = {
       cardDiv.innerHTML = `
         <div class="card-bg-layer" style="background-image: url('data:image/svg+xml;utf8,${encodeURIComponent(bgSvg)}');"></div>
         <div class="back-header-box">
-          <div class="terms-title" style="color: ${primary};">TERMS & CONDITIONS / IMPORTANT NOTICE</div>
-          <p class="terms-text">This card certifies that the bearer whose name and photo appear on this card is a bonafide student of ${data.schoolName || this.state.schoolName}. Always wear this ID while on school premises.</p>
+          <div class="terms-title" style="color: ${primary};">${data.termsTitle || this.state.termsTitle}</div>
+          <p class="terms-text">${data.termsText || this.state.termsText}</p>
         </div>
 
         <div class="back-emergency-box">

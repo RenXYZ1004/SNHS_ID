@@ -251,20 +251,6 @@
                     <input type="text" id="reg-lrn" placeholder="12-digit LRN (e.g. 109283746501)" maxlength="12" value="109283746501" required>
                     <span class="input-hint">Your unique 12-digit DepEd Student Number</span>
                   </div>
-                  <div class="form-group flex-1">
-                    <label for="reg-blood-type">Blood Type</label>
-                    <select id="reg-blood-type">
-                      <option value="O+" selected>O+</option>
-                      <option value="O-">O-</option>
-                      <option value="A+">A+</option>
-                      <option value="A-">A-</option>
-                      <option value="B+">B+</option>
-                      <option value="B-">B-</option>
-                      <option value="AB+">AB+</option>
-                      <option value="AB-">AB-</option>
-                      <option value="N/A">N/A</option>
-                    </select>
-                  </div>
                 </div>
 
                 <div class="form-row">
@@ -305,10 +291,6 @@
                 </div>
 
                 <div class="form-row">
-                  <div class="form-group flex-1">
-                    <label for="reg-birthdate">Date of Birth <span class="req">*</span></label>
-                    <input type="date" id="reg-birthdate" value="2008-05-14" required>
-                  </div>
                   <div class="form-group flex-1">
                     <label for="reg-gender">Gender</label>
                     <select id="reg-gender">
@@ -402,7 +384,30 @@
             <div class="wizard-step-panel" id="wizard-panel-3">
               <div class="form-section">
                 <div class="form-section-title">
-                  <i class="fa-solid fa-shield-heart"></i> Emergency Contact Details
+                  <i class="fa-solid fa-shield-heart"></i> Back of ID &mdash; Emergency &amp; Personal Details
+                </div>
+
+                <p class="form-section-note">These details are printed on the <strong>back</strong> of your ID card.</p>
+
+                <div class="form-row">
+                  <div class="form-group flex-1">
+                    <label for="reg-birthdate">Date of Birth <span class="req">*</span></label>
+                    <input type="date" id="reg-birthdate" value="2008-05-14" required>
+                  </div>
+                  <div class="form-group flex-1">
+                    <label for="reg-blood-type">Blood Type</label>
+                    <select id="reg-blood-type">
+                      <option value="O+" selected>O+</option>
+                      <option value="O-">O-</option>
+                      <option value="A+">A+</option>
+                      <option value="A-">A-</option>
+                      <option value="B+">B+</option>
+                      <option value="B-">B-</option>
+                      <option value="AB+">AB+</option>
+                      <option value="AB-">AB-</option>
+                      <option value="N/A">N/A</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div class="form-row">
@@ -681,6 +686,16 @@
                     <input type="text" id="input-principal-title" placeholder="e.g. Secondary School Principal IV" value="Secondary School Principal IV">
                   </div>
                 </div>
+
+                <div class="form-group">
+                  <label for="input-terms-title">Terms Heading (Back of Card)</label>
+                  <input type="text" id="input-terms-title" placeholder="e.g. TERMS &amp; CONDITIONS / IMPORTANT NOTICE" value="TERMS &amp; CONDITIONS / IMPORTANT NOTICE">
+                </div>
+
+                <div class="form-group">
+                  <label for="input-terms-text">Terms &amp; Conditions Text</label>
+                  <textarea id="input-terms-text" rows="4" placeholder="Text printed on the back of the ID card">This card certifies that the bearer whose name and photo appear on this card is a bonafide student of San Nicolas National High School. Always wear this ID while on school premises. In case of loss, report immediately to the Office of the Principal.</textarea>
+                </div>
               </div>
 
             </form>
@@ -828,7 +843,7 @@
 
                       <!-- Back Header -->
                       <div class="back-header-box">
-                        <div class="terms-title">TERMS & CONDITIONS / IMPORTANT NOTICE</div>
+                        <div class="terms-title" id="disp-terms-title">TERMS &amp; CONDITIONS / IMPORTANT NOTICE</div>
                         <p class="terms-text" id="disp-terms-text">
                           This card certifies that the bearer whose name and photo appear on this card is a bonafide student of San Nicolas National High School. Always wear this ID while on school premises. In case of loss, report immediately to the Office of the Principal.
                         </p>

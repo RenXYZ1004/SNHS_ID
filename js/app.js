@@ -108,7 +108,9 @@ const App = {
       { id: 'input-emergency-phone', key: 'emergencyPhone' },
       { id: 'input-address', key: 'address' },
       { id: 'input-principal-name', key: 'principalName' },
-      { id: 'input-principal-title', key: 'principalTitle' }
+      { id: 'input-principal-title', key: 'principalTitle' },
+      { id: 'input-terms-title', key: 'termsTitle' },
+      { id: 'input-terms-text', key: 'termsText' }
     ];
 
     map.forEach(item => {
@@ -294,7 +296,7 @@ const App = {
       zoomIn.addEventListener('click', () => {
         if (this.currentZoom < 1.6) {
           this.currentZoom += 0.1;
-          cardsWrapper.style.transform = `scale(${this.currentZoom})`;
+          cardsWrapper.style.setProperty('--zoom', this.currentZoom);
           zoomText.textContent = `${Math.round(this.currentZoom * 100)}%`;
         }
       });
@@ -302,7 +304,7 @@ const App = {
       zoomOut.addEventListener('click', () => {
         if (this.currentZoom > 0.6) {
           this.currentZoom -= 0.1;
-          cardsWrapper.style.transform = `scale(${this.currentZoom})`;
+          cardsWrapper.style.setProperty('--zoom', this.currentZoom);
           zoomText.textContent = `${Math.round(this.currentZoom * 100)}%`;
         }
       });
