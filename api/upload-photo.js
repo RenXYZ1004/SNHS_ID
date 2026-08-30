@@ -44,8 +44,22 @@ function slug(value, fallback) {
 }
 
 module.exports = async function handler(req, res) {
+  // GET reports whether the function and its token are wired up, so a failing
+  // upload can be diagnosed without posting an image. Never returns the token.
+  if (req.method === 'GET') {
+    const token = process.env.BLOB_READ_WRITE_TOKEN || '';
+    return res.status(200).json({
+      ok: true,
+      endpoint: 'alive',
+      tokenPresent: !!token,
+      tokenLooksValid: /^vercel_blob_rw_/.test(token),
+      tokenLength: token.length,
+      node: process.version
+    });
+  }
+
   if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
+    res.setHeader('Allow', 'GET, POST');
     return res.status(405).json({ error: 'Method not allowed' });
   }
 

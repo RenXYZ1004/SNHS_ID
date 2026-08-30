@@ -70,7 +70,13 @@ const BlobStore = {
           this.available = false;
           console.warn('Vercel Blob store not connected; photos stay in this browser.');
         } else {
-          console.warn('Photo upload failed:', res.status, data && data.error);
+          // Surface the server's reason -- a bare 502 in the console says
+          // nothing about which of token / store / payload is at fault.
+          const reason = (data && (data.detail || data.error)) || ('HTTP ' + res.status);
+          console.warn('Photo upload failed (' + res.status + '):', reason);
+          if (window.App && App.showToast) {
+            App.showToast('Photo could not be stored: ' + reason, 'error');
+          }
         }
         return null;
       }
