@@ -7,23 +7,23 @@
 const CardRenderer = {
   // Current Active Card Data State
   state: {
-    fullName: 'Juan M. Dela Cruz',
+    fullName: '',
     idType: 'STUDENT',
-    lrn: '109283746501',
-    idNumber: 'SNHS-2026-001',
-    gradeSection: 'Grade 12 - STEM-A',
-    trackStrand: 'Academic Track - STEM',
+    lrn: '',
+    idNumber: '',
+    gradeSection: '',
+    trackStrand: '',
     bloodType: 'O+',
-    birthDate: '2008-05-14',
+    birthDate: '',
     schoolYear: 'S.Y. 2025 - 2026',
     
     photoUrl: '',
     signatureUrl: '',
     principalSigUrl: '',
 
-    emergencyContact: 'Maria Dela Cruz',
-    emergencyPhone: '0917-123-4567',
-    address: 'Brgy. Salvacion, Busuanga, Palawan',
+    emergencyContact: '',
+    emergencyPhone: '',
+    address: '',
 
     principalName: 'DR. EMMA R. SANTOS, CESO V',
     principalTitle: 'Secondary School Principal IV',
