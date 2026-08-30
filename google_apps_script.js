@@ -115,6 +115,11 @@ function doGet(e) {
     }
     return jsonResponse({
       status: "success",
+      // Whether the script can actually see its API_KEY Script Property. If
+      // this is false the endpoint is still open to anyone, whatever the
+      // Script Properties screen appears to show -- usually the property was
+      // typed but "Save script properties" was never clicked.
+      keyRequired: !!requiredKey(),
       spreadsheetName: ss.getName(),
       spreadsheetId: ss.getId(),
       spreadsheetUrl: ss.getUrl(),
