@@ -1,0 +1,22 @@
+{
+  "name": "snhs-id-studio",
+  "version": "1.0.0",
+  "description": "Automatic High-Resolution Web-Based ID Card Generator with QR, Barcodes, Batch CSV & A4 Print Layouts",
+  "main": "server.js",
+  "scripts": {
+    "build": "echo Build completed successfully",
+    "start": "node server.js"
+  },
+  "keywords": [
+    "id-card-generator",
+    "deped-id",
+    "student-id",
+    "school-id",
+    "barcode",
+    "qr-code",
+    "batch-generation",
+    "pvc-print"
+  ],
+  "author": "Antigravity",
+  "license": "MIT"
+}

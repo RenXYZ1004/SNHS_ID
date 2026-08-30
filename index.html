@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SNHS ID Studio - Automated Web-Based ID Card & Registration Portal</title>
+  <meta name="description" content="Official San Nicolas National High School Student Online ID Registration, Instant ID Generator with QR codes, Batch CSV Processing, Google Sheets Sync, and A4 Print Sheets.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Cropper.js CSS for Photo Cropping -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+  
+  <!-- Custom Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-dark">
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Top Global Header Navigation -->
+  <header class="app-header">
+    <div class="header-brand" id="brand-home-link" style="cursor: pointer;" title="Go to Main Menu">
+      <div class="brand-icon">
+        <i class="fa-solid fa-id-card-clip"></i>
+      </div>
+      <div class="brand-text">
+        <h1 class="brand-title">SNHS <span>ID PORTAL</span></h1>
+        <p class="brand-subtitle">San Nicolas National High School • S.Y. 2025-2026</p>
+      </div>
+    </div>
+
+    <!-- Main View Switcher Navigation -->
+    <nav class="main-portal-nav" role="tablist">
+      <button class="portal-nav-btn active" id="nav-btn-home" data-view="landing">
+        <i class="fa-solid fa-house"></i> Main Menu
+      </button>
+      <button class="portal-nav-btn" id="nav-btn-register" data-view="student-portal">
+        <i class="fa-solid fa-user-plus"></i> Student Registration
+      </button>
+      <button class="portal-nav-btn" id="nav-btn-studio" data-view="staff-dashboard">
+        <i class="fa-solid fa-sliders"></i> Staff ID Studio
+        <span class="badge-pill" id="registered-badge-count">0</span>
+      </button>
+    </nav>
+
+    <!-- Header Actions / Auth & Sheets Status -->
+    <div class="header-actions">
+      <!-- Google Sheets Connection Status Badge -->
+      <div class="sheets-conn-indicator offline" id="header-sheets-status" title="Google Sheets Integration Status">
+        <i class="fa-solid fa-circle-dot"></i>
+        <span>Local Storage</span>
+      </div>
+
+      <!-- Guest State (Staff Login Button) -->
+      <div id="auth-guest-state">
+        <button class="btn btn-primary btn-sm" id="btn-open-staff-login">
+          <i class="fa-solid fa-lock"></i> Staff Login
+        </button>
+      </div>
+
+      <!-- Logged In State (Staff Badge & Logout) -->
+      <div id="auth-staff-state" style="display: none; align-items: center; gap: 0.6rem;">
+        <div class="staff-user-badge">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>Staff: <strong>Admin Registrar</strong></span>
+        </div>
+        <button class="btn btn-danger-soft btn-sm" id="btn-staff-logout" title="Log out of Staff Portal">
+          <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       VIEW 1: MAIN MENU / LANDING PORTAL
+       ========================================================================= -->
+  <main class="view-section active" id="view-landing">
+    <div class="landing-container">
+      
+      <!-- Hero Header -->
+      <section class="landing-hero">
+        <div class="hero-tag">
+          <i class="fa-solid fa-award"></i> Department of Education • Region IV-A Calabarzon
+        </div>
+        <h1 class="hero-title">
+          Official Student ID & Registration Portal
+        </h1>
+        <p class="hero-subtitle">
+          Welcome to San Nicolas National High School's automated identification portal. Students can register their information for S.Y. 2025–2026 with instant Google Sheets sync, while school staff can review, generate, and print high-resolution official ID cards.
+        </p>
+      </section>
+
+      <!-- Portals Selection Grid -->
+      <section class="portals-grid">
+        
+        <!-- Portal Card 1: Student Registration -->
+        <div class="portal-card" id="card-goto-registration">
+          <div class="portal-card-glow"></div>
+          <div class="portal-badge student-badge">
+            <i class="fa-solid fa-graduation-cap"></i> For Students
+          </div>
+          <div class="portal-icon-box">
+            <i class="fa-solid fa-user-pen"></i>
+          </div>
+          <h2 class="portal-card-title">Student Self-Registration</h2>
+          <p class="portal-card-desc">
+            Register your student profile in 3 easy steps. Upload or snap your 2x2 photo, draw your digital signature, and receive your instant digital ID confirmation code.
+          </p>
+          <ul class="portal-features-list">
+            <li><i class="fa-solid fa-check"></i> Simple 3-Step guided registration wizard</li>
+            <li><i class="fa-solid fa-check"></i> Live webcam or photo upload with 2x2 crop tool</li>
+            <li><i class="fa-solid fa-check"></i> Digital signature pad & real-time ID preview</li>
+            <li><i class="fa-solid fa-check"></i> Instant sync to Google Sheets & digital card receipt</li>
+          </ul>
+          <button class="btn btn-accent portal-action-btn" id="btn-start-registration">
+            <span>Register for Student ID</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
+        <!-- Portal Card 2: Staff & Faculty ID Studio -->
+        <div class="portal-card" id="card-goto-studio">
+          <div class="portal-card-glow staff-glow"></div>
+          <div class="portal-badge staff-badge">
+            <i class="fa-solid fa-shield-halved"></i> Faculty & Staff
+          </div>
+          <div class="portal-icon-box staff-icon">
+            <i class="fa-solid fa-id-card"></i>
+          </div>
+          <h2 class="portal-card-title">Staff ID Studio & Issuance</h2>
+          <p class="portal-card-desc">
+            School administration workstation. Connected to Google Sheets for live student roster retrieval, batch CSV card printing, and multi-card A4 sheet export.
+          </p>
+          <ul class="portal-features-list">
+            <li><i class="fa-solid fa-check"></i> 3D live front & back ID card studio</li>
+            <li><i class="fa-solid fa-check"></i> Real-time Google Sheets database sync</li>
+            <li><i class="fa-solid fa-check"></i> Batch CSV/Excel auto-generation & ZIP download</li>
+            <li><i class="fa-solid fa-check"></i> A4 Multi-card print layout (8 or 10 per page)</li>
+          </ul>
+          <button class="btn btn-primary portal-action-btn" id="btn-start-studio">
+            <span>Access Staff ID Studio</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
+      </section>
+
+      <!-- Quick Info / Status Banner -->
+      <section class="landing-stats-bar">
+        <div class="stat-item">
+          <i class="fa-solid fa-users"></i>
+          <div>
+            <strong id="stat-registered-count">0</strong>
+            <span>Students Registered</span>
+          </div>
+        </div>
+        <div class="stat-item">
+          <i class="fa-solid fa-table-cells"></i>
+          <div>
+            <strong>Google Sheets</strong>
+            <span>Live Cloud Database</span>
+          </div>
+        </div>
+        <div class="stat-item">
+          <i class="fa-solid fa-print"></i>
+          <div>
+            <strong>CR80 PVC & A4</strong>
+            <span>Standard High-Res Print</span>
+          </div>
+        </div>
+        <div class="stat-item">
+          <i class="fa-solid fa-shield-check"></i>
+          <div>
+            <strong>Guilloché Security</strong>
+            <span>Anti-Counterfeiting System</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+
+  <!-- =========================================================================
+       VIEW 2: STUDENT SELF-REGISTRATION PORTAL (USER-FRIENDLY 3-STEP WIZARD)
+       ========================================================================= -->
+  <main class="view-section" id="view-student-portal">
+    <div class="student-reg-container">
+      
+      <div class="reg-header-banner">
+        <div class="reg-header-text">
+          <span class="reg-pretitle"><i class="fa-solid fa-graduation-cap"></i> SAN NICOLAS NATIONAL HIGH SCHOOL</span>
+          <h2>Student Online ID Registration</h2>
+          <p>Complete the 3 quick steps below to generate your official school ID card.</p>
+        </div>
+        <button class="btn btn-outline btn-sm" id="btn-back-to-home-1">
+          <i class="fa-solid fa-arrow-left"></i> Back to Main Menu
+        </button>
+      </div>
+
+      <!-- User-Friendly Step Progress Wizard Bar -->
+      <div class="wizard-progress-bar">
+        <div class="wizard-step-item active" data-step="1" id="wiz-step-pill-1">
+          <div class="step-num"><i class="fa-solid fa-user"></i></div>
+          <div class="step-text">
+            <strong>Step 1</strong>
+            <span>Student Information</span>
+          </div>
+        </div>
+        <div class="step-line" id="wiz-line-1"></div>
+        <div class="wizard-step-item" data-step="2" id="wiz-step-pill-2">
+          <div class="step-num"><i class="fa-solid fa-camera"></i></div>
+          <div class="step-text">
+            <strong>Step 2</strong>
+            <span>Photo & Signature</span>
+          </div>
+        </div>
+        <div class="step-line" id="wiz-line-2"></div>
+        <div class="wizard-step-item" data-step="3" id="wiz-step-pill-3">
+          <div class="step-num"><i class="fa-solid fa-shield-heart"></i></div>
+          <div class="step-text">
+            <strong>Step 3</strong>
+            <span>Emergency & Submit</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="reg-workbench-grid">
+        
+        <!-- Registration Form Column -->
+        <div class="reg-form-card">
+          <form id="student-reg-form" autocomplete="off" onsubmit="return false;">
+            
+            <!-- STEP 1: Academic & Personal Info -->
+            <div class="wizard-step-panel active" id="wizard-panel-1">
+              <div class="form-section">
+                <div class="form-section-title">
+                  <i class="fa-solid fa-graduation-cap"></i> Academic & Personal Details
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group flex-2">
+                    <label for="reg-lrn">Learner Reference Number (LRN) <span class="req">*</span></label>
+                    <input type="text" id="reg-lrn" placeholder="12-digit LRN (e.g. 109283746501)" maxlength="12" value="109283746501" required>
+                    <span class="input-hint">Your unique 12-digit DepEd Student Number</span>
+                  </div>
+                  <div class="form-group flex-1">
+                    <label for="reg-blood-type">Blood Type</label>
+                    <select id="reg-blood-type">
+                      <option value="O+" selected>O+</option>
+                      <option value="O-">O-</option>
+                      <option value="A+">A+</option>
+                      <option value="A-">A-</option>
+                      <option value="B+">B+</option>
+                      <option value="B-">B-</option>
+                      <option value="AB+">AB+</option>
+                      <option value="AB-">AB-</option>
+                      <option value="N/A">N/A</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group flex-1">
+                    <label for="reg-first-name">First Name <span class="req">*</span></label>
+                    <input type="text" id="reg-first-name" placeholder="e.g. Juan" value="Juan" required>
+                  </div>
+                  <div class="form-group flex-1">
+                    <label for="reg-middle-name">Middle Initial</label>
+                    <input type="text" id="reg-middle-name" placeholder="e.g. M." value="M." maxlength="5">
+                  </div>
+                  <div class="form-group flex-1">
+                    <label for="reg-last-name">Last Name <span class="req">*</span></label>
+                    <input type="text" id="reg-last-name" placeholder="e.g. Dela Cruz" value="Dela Cruz" required>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group flex-1">
+                    <label for="reg-grade">Grade Level <span class="req">*</span></label>
+                    <select id="reg-grade" required>
+                      <option value="Grade 12" selected>Grade 12 (Senior High)</option>
+                      <option value="Grade 11">Grade 11 (Senior High)</option>
+                      <option value="Grade 10">Grade 10 (Junior High)</option>
+                      <option value="Grade 9">Grade 9 (Junior High)</option>
+                      <option value="Grade 8">Grade 8 (Junior High)</option>
+                      <option value="Grade 7">Grade 7 (Junior High)</option>
+                    </select>
+                  </div>
+                  <div class="form-group flex-1">
+                    <label for="reg-section">Section Name <span class="req">*</span></label>
+                    <input type="text" id="reg-section" placeholder="e.g. STEM-A, Diamond" value="STEM-A" required>
+                  </div>
+                  <div class="form-group flex-1">
+                    <label for="reg-strand">Track & Strand</label>
+                    <input type="text" id="reg-strand" placeholder="e.g. Academic Track - STEM" value="Academic Track - STEM">
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group flex-1">
+                    <label for="reg-birthdate">Date of Birth <span class="req">*</span></label>
+                    <input type="date" id="reg-birthdate" value="2008-05-14" required>
+                  </div>
+                  <div class="form-group flex-1">
+                    <label for="reg-gender">Gender</label>
+                    <select id="reg-gender">
+                      <option value="m" selected>Male</option>
+                      <option value="f">Female</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Wizard Step 1 Controls -->
+              <div class="wizard-nav-bar">
+                <button type="button" class="btn btn-primary btn-lg" id="btn-wiz-next-1">
+                  <span>Continue to Photo & Signature</span>
+                  <i class="fa-solid fa-arrow-right"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- STEP 2: Photo & Signature -->
+            <div class="wizard-step-panel" id="wizard-panel-2">
+              <div class="form-section">
+                <div class="form-section-title">
+                  <i class="fa-solid fa-camera"></i> Student Photo & Digital Signature
+                </div>
+
+                <p class="section-guidance-text">
+                  <i class="fa-solid fa-circle-info"></i> Please ensure your face is well-lit with a plain white or light background.
+                </p>
+
+                <div class="media-upload-grid">
+                  <!-- ID Photo Upload/Camera -->
+                  <div class="media-card highlight-card">
+                    <div class="media-thumb-box" id="reg-photo-thumb-container">
+                      <img id="reg-preview-photo" src="" alt="Student Photo">
+                      <div class="thumb-placeholder" id="reg-photo-placeholder">
+                        <i class="fa-solid fa-user"></i>
+                      </div>
+                    </div>
+                    <div class="media-details">
+                      <span class="media-label">Formal 2x2 ID Photo</span>
+                      <div class="media-actions">
+                        <button type="button" class="btn btn-sm btn-outline" id="btn-reg-upload-photo">
+                          <i class="fa-solid fa-upload"></i> Upload
+                        </button>
+                        <input type="file" id="input-reg-photo-file" accept="image/*" style="display:none;">
+                        <button type="button" class="btn btn-sm btn-primary" id="btn-reg-webcam">
+                          <i class="fa-solid fa-camera"></i> Snap Camera
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Digital Signature -->
+                  <div class="media-card highlight-card">
+                    <div class="media-thumb-box sig-box" id="reg-sig-thumb-container">
+                      <img id="reg-preview-sig" src="" alt="Signature">
+                      <div class="thumb-placeholder" id="reg-sig-placeholder">
+                        <i class="fa-solid fa-signature"></i>
+                      </div>
+                    </div>
+                    <div class="media-details">
+                      <span class="media-label">Student Digital Signature</span>
+                      <div class="media-actions">
+                        <button type="button" class="btn btn-sm btn-primary" id="btn-reg-draw-sig">
+                          <i class="fa-solid fa-pen"></i> Draw Signature
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline" id="btn-reg-upload-sig">
+                          <i class="fa-solid fa-upload"></i> Upload
+                        </button>
+                        <input type="file" id="input-reg-sig-file" accept="image/*" style="display:none;">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Wizard Step 2 Controls -->
+              <div class="wizard-nav-bar">
+                <button type="button" class="btn btn-secondary btn-lg" id="btn-wiz-prev-2">
+                  <i class="fa-solid fa-arrow-left"></i> <span>Back</span>
+                </button>
+                <button type="button" class="btn btn-primary btn-lg" id="btn-wiz-next-2">
+                  <span>Continue to Emergency & Review</span>
+                  <i class="fa-solid fa-arrow-right"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- STEP 3: Emergency & Submit -->
+            <div class="wizard-step-panel" id="wizard-panel-3">
+              <div class="form-section">
+                <div class="form-section-title">
+                  <i class="fa-solid fa-shield-heart"></i> Emergency Contact Details
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group flex-1">
+                    <label for="reg-guardian-name">Parent / Guardian Full Name <span class="req">*</span></label>
+                    <input type="text" id="reg-guardian-name" placeholder="e.g. Maria M. Dela Cruz" value="Maria Dela Cruz" required>
+                  </div>
+                  <div class="form-group flex-1">
+                    <label for="reg-guardian-phone">Emergency Phone Number <span class="req">*</span></label>
+                    <input type="text" id="reg-guardian-phone" placeholder="e.g. 0917-123-4567" value="0917-123-4567" required>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="reg-address">Complete Residential Address <span class="req">*</span></label>
+                  <input type="text" id="reg-address" placeholder="e.g. Brgy. San Nicolas, Pasig City" value="Brgy. San Nicolas, Pasig City" required>
+                </div>
+              </div>
+
+              <div class="submission-confirm-banner">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <div>
+                  <strong>Automatic Cloud Sync</strong>
+                  <p>Your registration record will be transmitted directly to the school registrar's Google Sheet and queue for official PVC printing.</p>
+                </div>
+              </div>
+
+              <!-- Wizard Step 3 Controls -->
+              <div class="wizard-nav-bar">
+                <button type="button" class="btn btn-secondary btn-lg" id="btn-wiz-prev-3">
+                  <i class="fa-solid fa-arrow-left"></i> <span>Back</span>
+                </button>
+                <button type="submit" class="btn btn-accent btn-lg" id="btn-submit-registration">
+                  <i class="fa-solid fa-paper-plane"></i> <span>Submit Registration & Generate ID</span>
+                </button>
+              </div>
+            </div>
+
+          </form>
+        </div>
+
+        <!-- Live Card Preview Column for Student -->
+        <div class="reg-preview-card">
+          <div class="reg-preview-header">
+            <h3><i class="fa-solid fa-eye"></i> Live ID Card Preview</h3>
+            <div class="student-preview-toggle-group">
+              <button type="button" class="tool-btn active" id="btn-student-view-front">Front</button>
+              <button type="button" class="tool-btn" id="btn-student-view-back">Back</button>
+              <button type="button" class="tool-btn" id="btn-student-view-both">Both</button>
+            </div>
+          </div>
+
+          <div class="student-live-card-viewport">
+            <div class="mini-card-wrapper" id="student-card-preview-target">
+              <!-- Dynamically rendered student card (Front / Back / Both) -->
+            </div>
+          </div>
+
+          <div class="reg-preview-notes">
+            <p><i class="fa-solid fa-circle-check"></i> <strong>Front & Back generated instantly:</strong> Includes your photo, signature, DepEd LRN, section, birthdate, emergency contacts, and a large scannable QR code.</p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+
+  <!-- =========================================================================
+       VIEW 3: STAFF & ADMIN DASHBOARD WORKBENCH
+       ========================================================================= -->
+  <main class="view-section" id="view-staff-dashboard">
+    
+    <!-- Sub-Navigation for Staff Tools -->
+    <div class="staff-subnav-bar">
+      <div class="subnav-left">
+        <h2><i class="fa-solid fa-id-badge"></i> Staff ID Issuance Studio</h2>
+        <span class="subnav-role">Authorized Access</span>
+      </div>
+      <div class="nav-tabs" role="tablist">
+        <button class="nav-tab active" data-tab="single" id="tab-single" role="tab" aria-selected="true">
+          <i class="fa-solid fa-user-pen"></i> Single Generator
+        </button>
+        <button class="nav-tab" data-tab="registered" id="tab-registered" role="tab" aria-selected="false">
+          <i class="fa-solid fa-user-check"></i> Registered Students
+          <span class="badge-pill" id="tab-reg-count">0</span>
+        </button>
+        <button class="nav-tab" data-tab="bulk" id="tab-bulk" role="tab" aria-selected="false">
+          <i class="fa-solid fa-users-viewfinder"></i> Batch / Bulk CSV
+          <span class="badge-pill" id="bulk-counter">0</span>
+        </button>
+        <button class="nav-tab" data-tab="print" id="tab-print" role="tab" aria-selected="false">
+          <i class="fa-solid fa-print"></i> Print Sheet (A4)
+        </button>
+        <button class="nav-tab" data-tab="settings" id="tab-settings" role="tab" aria-selected="false">
+          <i class="fa-solid fa-sliders"></i> Design & Sheets Sync
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Tab Contents for Staff -->
+    <div class="app-container">
+
+      <!-- ==================== TAB 1: SINGLE GENERATOR ==================== -->
+      <section class="tab-content active" id="content-single">
+        <div class="workbench-grid">
+          
+          <!-- Left Column: Form & Controls -->
+          <aside class="control-panel">
+            <div class="panel-header">
+              <h2><i class="fa-solid fa-pen-nib"></i> Student & Card Information</h2>
+              <span class="panel-tag">Live Sync</span>
+            </div>
+
+            <form id="id-form" class="editor-form" autocomplete="off" onsubmit="return false;">
+              
+              <!-- Category: Student Info -->
+              <div class="form-section">
+                <div class="form-section-title">
+                  <i class="fa-solid fa-graduation-cap"></i> Primary Information
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group flex-2">
+                    <label for="input-full-name">Full Name <span class="req">*</span></label>
+                    <input type="text" id="input-full-name" placeholder="e.g. Juan M. Dela Cruz" value="Juan M. Dela Cruz" required>
+                  </div>
+                  <div class="form-group flex-1">
+                    <label for="input-id-type">Role / Type</label>
+                    <select id="input-id-type">
+                      <option value="STUDENT" selected>Student</option>
+                      <option value="FACULTY">Faculty / Teacher</option>
+                      <option value="STAFF">Administrative Staff</option>
+                      <option value="VISITOR">Visitor / Guest</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group flex-1">
+                    <label for="input-lrn">LRN / Student ID <span class="req">*</span></label>
+                    <input type="text" id="input-lrn" placeholder="12-Digit LRN e.g. 109283746501" value="109283746501" maxlength="20" required>
+                  </div>
+                  <div class="form-group flex-1">
+                    <label for="input-id-number">Card ID / Series</label>
+                    <input type="text" id="input-id-number" placeholder="e.g. SNHS-2026-001" value="SNHS-2026-001">
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group flex-1">
+                    <label for="input-grade-section">Grade & Section / Dept</label>
+                    <input type="text" id="input-grade-section" placeholder="e.g. Grade 12 - STEM-A" value="Grade 12 - STEM-A">
+                  </div>
+                  <div class="form-group flex-1">
+                    <label for="input-track-strand">Track & Strand / Specialization</label>
+                    <input type="text" id="input-track-strand" placeholder="e.g. Academic Track - STEM" value="Academic Track - STEM">
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group flex-1">
+                    <label for="input-blood-type">Blood Type</label>
+                    <select id="input-blood-type">
+                      <option value="O+" selected>O+</option>
+                      <option value="O-">O-</option>
+                      <option value="A+">A+</option>
+                      <option value="A-">A-</option>
+                      <option value="B+">B+</option>
+                      <option value="B-">B-</option>
+                      <option value="AB+">AB+</option>
+                      <option value="AB-">AB-</option>
+                      <option value="N/A">N/A</option>
+                    </select>
+                  </div>
+                  <div class="form-group flex-1">
+                    <label for="input-birthdate">Date of Birth</label>
+                    <input type="date" id="input-birthdate" value="2008-05-14">
+                  </div>
+                  <div class="form-group flex-1">
+                    <label for="input-school-year">School Year / Validity</label>
+                    <input type="text" id="input-school-year" placeholder="e.g. S.Y. 2025 - 2026" value="S.Y. 2025 - 2026">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Category: Photo & Signature -->
+              <div class="form-section">
+                <div class="form-section-title">
+                  <i class="fa-solid fa-camera"></i> Photo & Signatures
+                </div>
+
+                <div class="media-upload-grid">
+                  <!-- ID Photo Upload -->
+                  <div class="media-card">
+                    <div class="media-thumb-box" id="photo-thumb-container">
+                      <img id="preview-photo-thumb" src="" alt="Student Photo">
+                      <div class="thumb-placeholder" id="photo-placeholder-icon">
+                        <i class="fa-solid fa-user"></i>
+                      </div>
+                    </div>
+                    <div class="media-details">
+                      <span class="media-label">ID Photo (Passport/2x2)</span>
+                      <div class="media-actions">
+                        <button type="button" class="btn btn-sm btn-outline" id="btn-trigger-upload">
+                          <i class="fa-solid fa-upload"></i> Upload
+                        </button>
+                        <input type="file" id="input-photo-file" accept="image/*" style="display: none;">
+                        <button type="button" class="btn btn-sm btn-outline" id="btn-trigger-webcam">
+                          <i class="fa-solid fa-camera"></i> Camera
+                        </button>
+                        <button type="button" class="btn btn-sm btn-danger-soft" id="btn-random-avatar" title="Generate AI Sample Avatar">
+                          <i class="fa-solid fa-dice"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Signature Upload/Draw -->
+                  <div class="media-card">
+                    <div class="media-thumb-box sig-box" id="sig-thumb-container">
+                      <img id="preview-sig-thumb" src="" alt="Signature">
+                      <div class="thumb-placeholder" id="sig-placeholder-icon">
+                        <i class="fa-solid fa-signature"></i>
+                      </div>
+                    </div>
+                    <div class="media-details">
+                      <span class="media-label">Student Signature</span>
+                      <div class="media-actions">
+                        <button type="button" class="btn btn-sm btn-outline" id="btn-draw-sig">
+                          <i class="fa-solid fa-pen"></i> Draw
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline" id="btn-upload-sig">
+                          <i class="fa-solid fa-upload"></i> Upload
+                        </button>
+                        <input type="file" id="input-sig-file" accept="image/*" style="display: none;">
+                        <button type="button" class="btn btn-sm btn-ghost" id="btn-clear-sig" title="Clear Signature">
+                          <i class="fa-solid fa-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Category: Back Card Emergency Details -->
+              <div class="form-section">
+                <div class="form-section-title">
+                  <i class="fa-solid fa-shield-heart"></i> Back Details & Emergency Info
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group flex-1">
+                    <label for="input-emergency-contact">Parent / Guardian Name</label>
+                    <input type="text" id="input-emergency-contact" placeholder="e.g. Maria Dela Cruz" value="Maria Dela Cruz">
+                  </div>
+                  <div class="form-group flex-1">
+                    <label for="input-emergency-phone">Emergency Phone</label>
+                    <input type="text" id="input-emergency-phone" placeholder="e.g. 0917-123-4567" value="0917-123-4567">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="input-address">Home Address</label>
+                  <input type="text" id="input-address" placeholder="e.g. Brgy. San Nicolas, Pasig City" value="Brgy. San Nicolas, Pasig City">
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group flex-1">
+                    <label for="input-principal-name">School Principal / Head</label>
+                    <input type="text" id="input-principal-name" placeholder="e.g. DR. EMMA R. SANTOS, CESO V" value="DR. EMMA R. SANTOS, CESO V">
+                  </div>
+                  <div class="form-group flex-1">
+                    <label for="input-principal-title">Designation / Title</label>
+                    <input type="text" id="input-principal-title" placeholder="e.g. Secondary School Principal IV" value="Secondary School Principal IV">
+                  </div>
+                </div>
+              </div>
+
+            </form>
+          </aside>
+
+          <!-- Right Column: Live Interactive Card Canvas Preview -->
+          <section class="preview-stage">
+            <div class="stage-toolbar">
+              <!-- Orientation Switch -->
+              <div class="toolbar-group">
+                <span class="toolbar-label">Orientation:</span>
+                <button class="tool-btn active" id="btn-orient-portrait" title="Portrait Card (Vertical)">
+                  <i class="fa-solid fa-mobile-screen"></i> Portrait
+                </button>
+                <button class="tool-btn" id="btn-orient-landscape" title="Landscape Card (Horizontal)">
+                  <i class="fa-solid fa-credit-card"></i> Landscape
+                </button>
+              </div>
+
+              <!-- View Switch -->
+              <div class="toolbar-group">
+                <span class="toolbar-label">View:</span>
+                <button class="tool-btn active" id="btn-view-front">Front</button>
+                <button class="tool-btn" id="btn-view-back">Back</button>
+                <button class="tool-btn" id="btn-view-both">Side-by-Side</button>
+              </div>
+
+              <!-- 3D Flip & Zoom Controls -->
+              <div class="toolbar-group">
+                <button class="tool-btn highlight" id="btn-flip-3d" title="Flip 3D Card">
+                  <i class="fa-solid fa-arrows-rotate"></i> Flip 3D
+                </button>
+                <button class="tool-btn icon-only" id="btn-zoom-out" title="Zoom Out"><i class="fa-solid fa-minus"></i></button>
+                <span id="zoom-level-text" class="zoom-indicator">100%</span>
+                <button class="tool-btn icon-only" id="btn-zoom-in" title="Zoom In"><i class="fa-solid fa-plus"></i></button>
+                <button class="tool-btn icon-only" id="btn-toggle-hologram" title="Toggle Holographic Foil Effect">
+                  <i class="fa-solid fa-sparkles"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- The Interactive Preview Canvas Area -->
+            <div class="card-display-viewport" id="card-viewport">
+              <div class="cards-wrapper orientation-portrait" id="cards-wrapper">
+                
+                <!-- 3D Flip Card Container (Single View) -->
+                <div class="flip-card-scene" id="flip-scene">
+                  <div class="flip-card-inner" id="flip-card-inner">
+                    
+                    <!-- ================= FRONT CARD ================= -->
+                    <div class="id-card id-card-front" id="card-front-element" data-side="front">
+                      <div class="card-bg-layer" id="front-bg-layer"></div>
+                      <div class="card-hologram-layer" id="front-hologram"></div>
+                      
+                      <!-- Card Top Header -->
+                      <header class="card-header">
+                        <div class="card-logo-left">
+                          <img src="" id="card-logo-deped" class="header-logo" alt="DepEd Logo">
+                        </div>
+                        <div class="card-school-info">
+                          <span class="republic-text" id="disp-country-text">REPUBLIC OF THE PHILIPPINES</span>
+                          <span class="dept-text" id="disp-dept-text">DEPARTMENT OF EDUCATION</span>
+                          <span class="region-text" id="disp-region-text">REGION IV-A CALABARZON</span>
+                          <h2 class="school-name-text" id="disp-school-name">SAN NICOLAS NATIONAL HIGH SCHOOL</h2>
+                          <span class="school-addr-text" id="disp-school-address">San Nicolas, Pasig City &bull; School ID: 301425</span>
+                        </div>
+                        <div class="card-logo-right">
+                          <img src="" id="card-logo-school" class="header-logo" alt="School Seal">
+                        </div>
+                      </header>
+
+                      <!-- Student Role Banner -->
+                      <div class="card-role-banner" id="disp-role-banner">
+                        <span id="disp-role-text">SENIOR HIGH SCHOOL STUDENT</span>
+                      </div>
+
+                      <!-- Card Body -->
+                      <div class="card-body">
+                        <!-- Photo Area -->
+                        <div class="card-photo-container">
+                          <div class="card-photo-frame">
+                            <img id="disp-student-photo" src="" alt="Student Photo">
+                          </div>
+                          <div class="card-blood-badge">
+                            <span class="blood-label">BLOOD</span>
+                            <span class="blood-val" id="disp-blood-val">O+</span>
+                          </div>
+                        </div>
+
+                        <!-- Student Details -->
+                        <div class="card-meta-container">
+                          <div class="student-name-box">
+                            <h3 class="student-name" id="disp-student-name">JUAN M. DELA CRUZ</h3>
+                            <div class="student-lrn-box">
+                              <span class="lrn-label">LRN:</span>
+                              <span class="lrn-value" id="disp-lrn-value">109283746501</span>
+                            </div>
+                          </div>
+
+                          <div class="student-details-list">
+                            <div class="detail-row">
+                              <span class="d-label">GRADE & SEC:</span>
+                              <span class="d-val" id="disp-grade-val">Grade 12 - STEM-A</span>
+                            </div>
+                            <div class="detail-row">
+                              <span class="d-label">TRACK/STRAND:</span>
+                              <span class="d-val" id="disp-strand-val">Academic Track - STEM</span>
+                            </div>
+                            <div class="detail-row">
+                              <span class="d-label">BIRTHDATE:</span>
+                              <span class="d-val" id="disp-dob-val">May 14, 2008</span>
+                            </div>
+                            <div class="detail-row">
+                              <span class="d-label">CARD NO:</span>
+                              <span class="d-val mono" id="disp-idno-val">SNHS-2026-001</span>
+                            </div>
+                          </div>
+
+                          <!-- Front Signature -->
+                          <div class="student-signature-box">
+                            <div class="sig-image-wrap">
+                              <img id="disp-student-sig" src="" alt="Student Signature">
+                            </div>
+                            <span class="sig-caption">Signature of Student</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Front Footer Bar -->
+                      <footer class="card-footer">
+                        <div class="validity-box">
+                          <span class="sy-label">VALIDITY:</span>
+                          <span class="sy-value" id="disp-sy-val">S.Y. 2025 - 2026</span>
+                        </div>
+                        <div class="footer-chip">
+                          <i class="fa-solid fa-microchip"></i> OFFICIAL ID
+                        </div>
+                      </footer>
+                    </div>
+
+                    <!-- ================= BACK CARD ================= -->
+                    <div class="id-card id-card-back" id="card-back-element" data-side="back">
+                      <div class="card-bg-layer" id="back-bg-layer"></div>
+                      <div class="card-hologram-layer" id="back-hologram"></div>
+
+                      <!-- Back Header -->
+                      <div class="back-header-box">
+                        <div class="terms-title">TERMS & CONDITIONS / IMPORTANT NOTICE</div>
+                        <p class="terms-text" id="disp-terms-text">
+                          This card certifies that the bearer whose name and photo appear on this card is a bonafide student of San Nicolas National High School. Always wear this ID while on school premises. In case of loss, report immediately to the Office of the Principal.
+                        </p>
+                      </div>
+
+                      <!-- Emergency Contact Section -->
+                      <div class="back-emergency-box">
+                        <div class="sec-heading">
+                          <i class="fa-solid fa-phone-volume"></i> IN CASE OF EMERGENCY, NOTIFY:
+                        </div>
+                        <div class="em-grid">
+                          <div class="em-row">
+                            <span class="em-label">Guardian / Parent:</span>
+                            <span class="em-val" id="disp-em-contact">Maria Dela Cruz</span>
+                          </div>
+                          <div class="em-row">
+                            <span class="em-label">Contact No.:</span>
+                            <span class="em-val bold highlight" id="disp-em-phone">0917-123-4567</span>
+                          </div>
+                          <div class="em-row">
+                            <span class="em-label">Address:</span>
+                            <span class="em-val" id="disp-em-address">Brgy. San Nicolas, Pasig City</span>
+                          </div>
+                          <div class="em-row">
+                            <span class="em-label">Date of Birth:</span>
+                            <span class="em-val" id="disp-em-dob">May 14, 2008</span>
+                          </div>
+                          <div class="em-row">
+                            <span class="em-label">Blood Type / LRN:</span>
+                            <span class="em-val mono"><span id="disp-em-blood">O+</span> • <span id="disp-em-lrn">109283746501</span></span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Principal Signature Box -->
+                      <div class="back-principal-box">
+                        <div class="principal-sig-wrap">
+                          <img id="disp-principal-sig" src="" alt="Principal Signature">
+                        </div>
+                        <div class="principal-name" id="disp-principal-name">DR. EMMA R. SANTOS, CESO V</div>
+                        <div class="principal-title" id="disp-principal-title">Secondary School Principal IV</div>
+                      </div>
+
+                      <!-- Back Footer: Centered QR Code Section -->
+                      <div class="back-codes-footer">
+                        <div class="qr-code-box">
+                          <div id="disp-qr-container" class="qr-canvas-holder"></div>
+                          <span class="code-note">SCAN TO VERIFY</span>
+                        </div>
+                      </div>
+
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Bottom Action Buttons for Single Card -->
+            <div class="stage-footer-actions">
+              <button class="btn btn-outline" id="btn-dl-front-png">
+                <i class="fa-solid fa-file-image"></i> Download Front PNG
+              </button>
+              <button class="btn btn-outline" id="btn-dl-back-png">
+                <i class="fa-solid fa-file-image"></i> Download Back PNG
+              </button>
+              <button class="btn btn-secondary" id="btn-dl-combined-png">
+                <i class="fa-solid fa-images"></i> Combined PNG (Front+Back)
+              </button>
+              <button class="btn btn-primary" id="btn-dl-card-pdf">
+                <i class="fa-solid fa-file-pdf"></i> Download PDF (CR80)
+              </button>
+              <button class="btn btn-accent" id="btn-add-to-batch">
+                <i class="fa-solid fa-folder-plus"></i> Add to Batch Queue
+              </button>
+            </div>
+          </section>
+
+        </div>
+      </section>
+
+
+      <!-- ==================== TAB 2: REGISTERED STUDENTS QUEUE ==================== -->
+      <section class="tab-content" id="content-registered">
+        <div class="bulk-container">
+          
+          <div class="bulk-header-card">
+            <div class="bulk-title-area">
+              <h2><i class="fa-solid fa-user-check"></i> Registered Students Queue</h2>
+              <p>Review student records submitted through the online registration portal and synced to Google Sheets.</p>
+            </div>
+            <div class="bulk-action-bar">
+              <button class="btn btn-primary btn-sm" id="btn-fetch-from-sheets">
+                <i class="fa-solid fa-cloud-arrow-down"></i> Pull from Google Sheet
+              </button>
+              <button class="btn btn-accent btn-sm" id="btn-queue-all-to-batch">
+                <i class="fa-solid fa-arrow-right-to-bracket"></i> Transfer All to Batch Print
+              </button>
+              <button class="btn btn-danger-soft btn-sm" id="btn-clear-registered-db">
+                <i class="fa-solid fa-trash-can"></i> Clear Submissions
+              </button>
+            </div>
+          </div>
+
+          <!-- Registered Students Data Table -->
+          <div class="bulk-table-card">
+            <div class="table-toolbar">
+              <div class="table-stats">
+                <span class="count-badge" id="online-reg-count-badge">0 Online Submissions</span>
+                <div class="sheets-conn-indicator offline" style="margin-left: 0.5rem;">
+                  <i class="fa-solid fa-circle-dot"></i> <span>Google Sheet Synced</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table" id="registered-data-table">
+                <thead>
+                  <tr>
+                    <th width="40">#</th>
+                    <th width="80">Photo</th>
+                    <th>LRN</th>
+                    <th>Full Name</th>
+                    <th>Grade & Section</th>
+                    <th>Track / Strand</th>
+                    <th>Emergency Contact</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th width="120">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="registered-table-body">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+
+      <!-- ==================== TAB 3: BATCH / BULK CSV GENERATOR ==================== -->
+      <section class="tab-content" id="content-bulk">
+        <div class="bulk-container">
+          
+          <div class="bulk-header-card">
+            <div class="bulk-title-area">
+              <h2><i class="fa-solid fa-users-rectangle"></i> Batch / Bulk Automatic ID Generation</h2>
+              <p>Upload a CSV or Excel (.xlsx) file containing student records to generate hundreds of IDs in seconds with QR codes automatically!</p>
+            </div>
+            
+            <div class="bulk-action-bar">
+              <button class="btn btn-secondary btn-sm" id="btn-download-sample-csv">
+                <i class="fa-solid fa-file-csv"></i> Download CSV Template
+              </button>
+              <button class="btn btn-accent btn-sm" id="btn-generate-random-batch">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Load 8 Mock Students
+              </button>
+              <button class="btn btn-danger-soft btn-sm" id="btn-clear-batch">
+                <i class="fa-solid fa-trash-can"></i> Clear All
+              </button>
+            </div>
+          </div>
+
+          <!-- File Upload Dropzone -->
+          <div class="upload-dropzone" id="bulk-dropzone">
+            <input type="file" id="bulk-file-input" accept=".csv, .xlsx, .xls" style="display:none;">
+            <div class="dropzone-content">
+              <div class="dropzone-icon">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+              </div>
+              <h3>Drag and Drop your CSV or Excel file here</h3>
+              <p>Supports <code>.csv</code>, <code>.xlsx</code> with columns: <em>LRN, FullName, GradeSection, TrackStrand, EmergencyContact, EmergencyPhone, Address, BloodType</em></p>
+              <button type="button" class="btn btn-primary" id="btn-select-bulk-file">
+                <i class="fa-solid fa-folder-open"></i> Browse Files
+              </button>
+            </div>
+          </div>
+
+          <!-- Bulk Data Table Section -->
+          <div class="bulk-table-card" id="bulk-table-container">
+            <div class="table-toolbar">
+              <div class="table-stats">
+                <span class="count-badge" id="table-record-count">0 Records Loaded</span>
+                <span class="status-indicator ready"><i class="fa-solid fa-circle-check"></i> Ready to Generate</span>
+              </div>
+              <div class="table-actions">
+                <button class="btn btn-secondary btn-sm" id="btn-add-empty-row">
+                  <i class="fa-solid fa-plus"></i> Add Row
+                </button>
+                <button class="btn btn-primary" id="btn-render-all-batch">
+                  <i class="fa-solid fa-play"></i> Generate All Batch IDs
+                </button>
+                <button class="btn btn-accent" id="btn-download-all-zip">
+                  <i class="fa-solid fa-file-zipper"></i> Download All as ZIP (PNGs)
+                </button>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table" id="batch-data-table">
+                <thead>
+                  <tr>
+                    <th width="40">#</th>
+                    <th width="80">Photo</th>
+                    <th>LRN / ID</th>
+                    <th>Full Name</th>
+                    <th>Grade & Section</th>
+                    <th>Track / Strand</th>
+                    <th>Emergency Contact</th>
+                    <th>Phone</th>
+                    <th>Blood</th>
+                    <th width="100">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="batch-table-body">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Batch Generated Cards Preview Grid -->
+          <div class="batch-preview-section" id="batch-preview-section">
+            <div class="section-heading">
+              <h3><i class="fa-solid fa-id-card"></i> Batch Generated ID Previews</h3>
+              <span class="note-text">Click any card to edit in Single Generator mode</span>
+            </div>
+            <div class="batch-cards-grid" id="batch-cards-grid">
+              <!-- Rendered thumbnail cards -->
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+
+      <!-- ==================== TAB 4: PRINT SHEET (A4) ==================== -->
+      <section class="tab-content" id="content-print">
+        <div class="print-container">
+          
+          <div class="print-controls-card">
+            <div class="print-config-header">
+              <h2><i class="fa-solid fa-print"></i> A4 Multi-Card Print Layout</h2>
+              <p>Standard PVC Card Layout (85.6mm × 53.98mm) arranged for high-precision A4 printing on standard card paper or PVC trays.</p>
+            </div>
+
+            <div class="print-options-grid">
+              <div class="form-group">
+                <label for="print-cards-source">Source of IDs:</label>
+                <select id="print-cards-source">
+                  <option value="current">Current Single Card (Duplicate 8x or 10x)</option>
+                  <option value="batch" selected>Batch Dataset (All Loaded Students)</option>
+                  <option value="registered">Registered Students Submissions</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="print-layout-style">Page Layout:</label>
+                <select id="print-layout-style">
+                  <option value="8-cards" selected>8 Cards per A4 Sheet (4 Front + 4 Back Duplex / Grid)</option>
+                  <option value="10-cards">10 Cards per A4 Sheet (Standard 2x5 Grid)</option>
+                  <option value="front-only">Front Sides Only (8 per page)</option>
+                  <option value="back-only">Back Sides Only (8 per page)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="print-cut-marks">Cut Guides & Margins:</label>
+                <select id="print-cut-marks">
+                  <option value="visible" selected>Show Thin Crop Marks</option>
+                  <option value="dashed">Show Dashed Cutting Guides</option>
+                  <option value="none">No Cut Marks (Seamless)</option>
+                </select>
+              </div>
+
+              <div class="print-action-btns">
+                <button class="btn btn-primary" id="btn-trigger-print">
+                  <i class="fa-solid fa-print"></i> Print Now (A4)
+                </button>
+                <button class="btn btn-accent" id="btn-export-print-pdf">
+                  <i class="fa-solid fa-file-pdf"></i> Export Print-Ready PDF
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="a4-sheet-preview-wrap">
+            <div class="a4-sheet-stage">
+              <div class="a4-sheet" id="a4-print-sheet">
+                <!-- Rendered A4 Cards Grid -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+
+      <!-- ==================== TAB 5: DESIGN & GOOGLE SHEETS SETTINGS ==================== -->
+      <section class="tab-content" id="content-settings">
+        <div class="settings-container">
+          <div class="settings-grid">
+
+            <!-- Google Sheets Integration Card -->
+            <div class="settings-card" style="grid-column: 1 / -1; border-color: rgba(34, 197, 94, 0.3); background: rgba(16, 24, 39, 0.9);">
+              <div class="card-head" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                  <h3 style="color: #4ade80;"><i class="fa-solid fa-table-cells"></i> Google Sheets Real-Time Cloud Integration</h3>
+                  <p>Automatically store student registrations and staff accounts directly inside your Google Sheet.</p>
+                </div>
+                <button class="btn btn-sm btn-outline" id="btn-open-sheets-setup" style="border-color: #4ade80; color: #4ade80;">
+                  <i class="fa-solid fa-book-open"></i> 30-Second Setup Guide & Script
+                </button>
+              </div>
+
+              <div class="sheets-config-form">
+                <div class="form-group">
+                  <label for="sheets-webhook-url">Google Apps Script Web App Deployment URL</label>
+                  <div style="display: flex; gap: 0.5rem;">
+                    <input type="text" id="sheets-webhook-url" placeholder="https://script.google.com/macros/s/AKfycbx.../exec">
+                    <button class="btn btn-primary" id="btn-save-sheets-config">
+                      <i class="fa-solid fa-floppy-disk"></i> Save URL
+                    </button>
+                    <button class="btn btn-secondary" id="btn-test-sheets-conn">
+                      <i class="fa-solid fa-vial"></i> Test
+                    </button>
+                  </div>
+                  <span class="input-hint">Every student who registers online will automatically appear in your Google Sheet!</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Theme Presets Card -->
+            <div class="settings-card">
+              <div class="card-head">
+                <h3><i class="fa-solid fa-palette"></i> Design Presets & Color Themes</h3>
+                <p>Choose an authentic DepEd/School preset or customize your institution's palette.</p>
+              </div>
+              
+              <div class="theme-preset-grid">
+                <div class="preset-pill active" data-preset="snhs-deped">
+                  <div class="preset-color-preview" style="background: linear-gradient(135deg, #0b2545, #134074, #e0a96d);"></div>
+                  <div class="preset-info">
+                    <strong>DepEd / SNHS Official</strong>
+                    <span>Navy Blue, Gold & Bagong Pilipinas</span>
+                  </div>
+                </div>
+
+                <div class="preset-pill" data-preset="emerald-poly">
+                  <div class="preset-color-preview" style="background: linear-gradient(135deg, #064e3b, #047857, #10b981);"></div>
+                  <div class="preset-info">
+                    <strong>Emerald Polytechnic</strong>
+                    <span>Forest Green & Gold Accent</span>
+                  </div>
+                </div>
+
+                <div class="preset-pill" data-preset="crimson-univ">
+                  <div class="preset-color-preview" style="background: linear-gradient(135deg, #7f1d1d, #b91c1c, #f59e0b);"></div>
+                  <div class="preset-info">
+                    <strong>Crimson University</strong>
+                    <span>Maroon, Scarlet & Warm Gold</span>
+                  </div>
+                </div>
+
+                <div class="preset-pill" data-preset="royal-violet">
+                  <div class="preset-color-preview" style="background: linear-gradient(135deg, #3b0764, #6b21a8, #a855f7);"></div>
+                  <div class="preset-info">
+                    <strong>Royal Science High</strong>
+                    <span>Purple, Indigo & Radiant Violet</span>
+                  </div>
+                </div>
+
+                <div class="preset-pill" data-preset="cyber-dark">
+                  <div class="preset-color-preview" style="background: linear-gradient(135deg, #0f172a, #1e293b, #38bdf8);"></div>
+                  <div class="preset-info">
+                    <strong>Tech & ICT Modern</strong>
+                    <span>Dark Slate, Cyan & Microchip</span>
+                  </div>
+                </div>
+
+                <div class="preset-pill" data-preset="clean-minimal">
+                  <div class="preset-color-preview" style="background: linear-gradient(135deg, #f8fafc, #e2e8f0, #2563eb);"></div>
+                  <div class="preset-info">
+                    <strong>Clean Minimalist</strong>
+                    <span>Crisp White, Silver & Royal Blue</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="custom-color-controls">
+                <h4>Custom Color Overrides</h4>
+                <div class="color-pickers-row">
+                  <div class="color-item">
+                    <label for="color-primary">Primary Color</label>
+                    <div class="picker-wrap">
+                      <input type="color" id="color-primary" value="#0b2545">
+                      <span id="hex-primary">#0b2545</span>
+                    </div>
+                  </div>
+                  <div class="color-item">
+                    <label for="color-secondary">Secondary Color</label>
+                    <div class="picker-wrap">
+                      <input type="color" id="color-secondary" value="#134074">
+                      <span id="hex-secondary">#134074</span>
+                    </div>
+                  </div>
+                  <div class="color-item">
+                    <label for="color-accent">Accent / Gold</label>
+                    <div class="picker-wrap">
+                      <input type="color" id="color-accent" value="#d4af37">
+                      <span id="hex-accent">#d4af37</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- School Institution Branding Details -->
+            <div class="settings-card">
+              <div class="card-head">
+                <h3><i class="fa-solid fa-school"></i> Institution Branding & Header Texts</h3>
+                <p>Customize the header texts, seals, and authority signature on all cards.</p>
+              </div>
+
+              <div class="settings-form">
+                <div class="form-group">
+                  <label for="set-country-text">Header Line 1 (Country)</label>
+                  <input type="text" id="set-country-text" value="REPUBLIC OF THE PHILIPPINES">
+                </div>
+
+                <div class="form-group">
+                  <label for="set-dept-text">Header Line 2 (Department / Ministry)</label>
+                  <input type="text" id="set-dept-text" value="DEPARTMENT OF EDUCATION">
+                </div>
+
+                <div class="form-group">
+                  <label for="set-region-text">Header Line 3 (Region / Division)</label>
+                  <input type="text" id="set-region-text" value="REGION IV-A CALABARZON">
+                </div>
+
+                <div class="form-group">
+                  <label for="set-school-name">School / Organization Name</label>
+                  <input type="text" id="set-school-name" value="SAN NICOLAS NATIONAL HIGH SCHOOL">
+                </div>
+
+                <div class="form-group">
+                  <label for="set-school-address">School Address & ID Code</label>
+                  <input type="text" id="set-school-address" value="San Nicolas, Pasig City • School ID: 301425">
+                </div>
+
+                <!-- Custom Logos -->
+                <div class="logo-uploaders-row">
+                  <div class="logo-uploader-item">
+                    <label>Left Logo (DepEd / National Seal)</label>
+                    <div class="logo-preview-box" id="logo-left-preview">
+                      <img id="img-logo-left-preview" src="" alt="Left Logo">
+                    </div>
+                    <input type="file" id="file-logo-left" accept="image/*" style="display:none;">
+                    <button type="button" class="btn btn-sm btn-outline" id="btn-upload-logo-left">
+                      <i class="fa-solid fa-upload"></i> Change Logo
+                    </button>
+                  </div>
+
+                  <div class="logo-uploader-item">
+                    <label>Right Logo (School Emblem)</label>
+                    <div class="logo-preview-box" id="logo-right-preview">
+                      <img id="img-logo-right-preview" src="" alt="Right Logo">
+                    </div>
+                    <input type="file" id="file-logo-right" accept="image/*" style="display:none;">
+                    <button type="button" class="btn btn-sm btn-outline" id="btn-upload-logo-right">
+                      <i class="fa-solid fa-upload"></i> Change Seal
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Security Pattern & Hologram Controls -->
+                <div class="security-toggles">
+                  <h4>Security & Aesthetics Features</h4>
+                  <div class="toggle-row">
+                    <label class="switch-label">
+                      <input type="checkbox" id="toggle-guilloche" checked>
+                      <span class="switch-slider"></span>
+                      <span>Guilloché Anti-Counterfeit Background Pattern</span>
+                    </label>
+                  </div>
+                  <div class="toggle-row">
+                    <label class="switch-label">
+                      <input type="checkbox" id="toggle-hologram-fx" checked>
+                      <span class="switch-slider"></span>
+                      <span>Holographic Sheen / Foil Security Overlay</span>
+                    </label>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+
+  <!-- =========================================================================
+       MODALS
+       ========================================================================= -->
+
+  <!-- Modal: Google Sheets Setup Guide -->
+  <div class="modal-overlay" id="modal-sheets-setup" role="dialog" aria-modal="true" aria-labelledby="sheets-setup-title">
+    <div class="modal-card modal-lg">
+      <div class="modal-header" style="border-bottom-color: rgba(34, 197, 94, 0.3);">
+        <h3 id="sheets-setup-title" style="color: #4ade80;">
+          <i class="fa-solid fa-table-cells"></i> Google Sheets 30-Second Setup Guide
+        </h3>
+        <button class="modal-close" id="btn-close-sheets-setup"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="setup-steps-list">
+          <div class="setup-step">
+            <span class="step-badge">1</span>
+            <div>
+              <strong>Create a new Google Sheet</strong>
+              <p>Go to <a href="https://sheets.new" target="_blank" style="color:#60a5fa;">sheets.new</a> and name it <em>"SNHS Student ID Database"</em>.</p>
+            </div>
+          </div>
+          <div class="setup-step">
+            <span class="step-badge">2</span>
+            <div>
+              <strong>Open Apps Script & Paste Code</strong>
+              <p>Inside your Google Sheet, click <strong>Extensions &gt; Apps Script</strong>. Replace all default code with the script below:</p>
+            </div>
+          </div>
+          <div class="setup-code-box">
+            <button class="btn btn-sm btn-accent" id="btn-copy-apps-script" style="float: right; margin-bottom: 6px;">
+              <i class="fa-solid fa-copy"></i> Copy Script Code
+            </button>
+            <pre><code>// Click "Copy Script Code" above to copy the ready-to-use Google Apps Script backend!</code></pre>
+          </div>
+          <div class="setup-step">
+            <span class="step-badge">3</span>
+            <div>
+              <strong>Deploy as Web App & Paste URL</strong>
+              <p>Click <strong>Deploy &gt; New Deployment &gt; Select type: Web App</strong>. Set <em>Who has access</em> to <strong>"Anyone"</strong>, click <strong>Deploy</strong>, and copy the Web App URL into the settings box!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="document.getElementById('modal-sheets-setup').classList.remove('active')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Staff Login -->
+  <div class="modal-overlay" id="modal-staff-login" role="dialog" aria-modal="true" aria-labelledby="staff-login-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="staff-login-title"><i class="fa-solid fa-shield-halved"></i> Staff & Registrar Portal Login</h3>
+        <button class="modal-close" id="btn-close-staff-login"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <p class="login-instruction-text">
+          Authorized personnel access for ID card batch generation, student approval, and A4 print operations. Connected to Google Sheets staff accounts.
+        </p>
+
+        <form id="staff-login-form" autocomplete="off" onsubmit="return false;">
+          <div class="form-group">
+            <label for="login-username">Staff Username</label>
+            <input type="text" id="login-username" value="admin" placeholder="e.g. admin" required>
+          </div>
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" value="snhs2026" placeholder="Enter password" required>
+          </div>
+          <div class="demo-login-notice">
+            <i class="fa-solid fa-lightbulb"></i> <span>Demo Login: <code>admin</code> / <code>snhs2026</code></span>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-cancel-staff-login">Cancel</button>
+        <button class="btn btn-outline" id="btn-demo-quick-login">
+          <i class="fa-solid fa-bolt"></i> 1-Click Demo Login
+        </button>
+        <button class="btn btn-primary" id="btn-submit-staff-login">
+          <i class="fa-solid fa-right-to-bracket"></i> Login
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Registration Success Receipt & Digital ID -->
+  <div class="modal-overlay" id="modal-reg-success" role="dialog" aria-modal="true" aria-labelledby="success-title">
+    <div class="modal-card modal-lg">
+      <div class="modal-header" style="background: rgba(16, 185, 129, 0.15); border-bottom-color: rgba(16, 185, 129, 0.3);">
+        <h3 id="success-title" style="color: var(--success);"><i class="fa-solid fa-circle-check"></i> Registration Submitted Successfully!</h3>
+        <button class="modal-close" id="btn-close-reg-success"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="reg-success-content">
+          <div class="receipt-meta-box">
+            <div class="ref-num-box">
+              <span class="ref-label">REGISTRATION REFERENCE NO:</span>
+              <h2 class="ref-code" id="receipt-ref-code">SNHS-REG-2026-0001</h2>
+            </div>
+            <p class="receipt-note">
+              Please save or screenshot this confirmation. Your record with your full personal, academic, and emergency details is synced to Google Sheets.
+            </p>
+          </div>
+
+          <!-- Side-by-side or tabbed Front and Back view of student card -->
+          <div class="receipt-card-preview-area" id="receipt-card-stage" style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
+            <!-- Digital ID Front & Back Renders -->
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="flex-wrap: wrap;">
+        <button class="btn btn-secondary" id="btn-done-reg-success">
+          <i class="fa-solid fa-house"></i> Main Menu
+        </button>
+        <button class="btn btn-outline" id="btn-dl-receipt-front">
+          <i class="fa-solid fa-file-image"></i> Download Front (PNG)
+        </button>
+        <button class="btn btn-outline" id="btn-dl-receipt-back">
+          <i class="fa-solid fa-file-image"></i> Download Back (PNG)
+        </button>
+        <button class="btn btn-primary" id="btn-download-my-digital-id">
+          <i class="fa-solid fa-download"></i> Download Combined (Front + Back)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Webcam Live Capture -->
+  <div class="modal-overlay" id="webcam-modal" role="dialog" aria-modal="true" aria-labelledby="webcam-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="webcam-title"><i class="fa-solid fa-camera"></i> Live Webcam Photo Capture</h3>
+        <button class="modal-close" id="btn-close-webcam"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="webcam-viewport">
+          <video id="webcam-video" autoplay playsinline></video>
+          <div class="face-guide-overlay">
+            <div class="oval-guide"></div>
+            <p>Align face within guide</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-cancel-webcam">Cancel</button>
+        <button class="btn btn-primary" id="btn-snap-webcam">
+          <i class="fa-solid fa-camera-retro"></i> Snap Photo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Photo Cropper / Passport Framing -->
+  <div class="modal-overlay" id="crop-modal" role="dialog" aria-modal="true" aria-labelledby="crop-title">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3 id="crop-title"><i class="fa-solid fa-crop-simple"></i> Crop & Position ID Photo</h3>
+        <button class="modal-close" id="btn-close-crop"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="cropper-container-box">
+          <img id="cropper-target-img" src="" alt="Crop Target">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline btn-sm" id="btn-crop-rotate-left"><i class="fa-solid fa-rotate-left"></i> Rotate</button>
+        <button class="btn btn-outline btn-sm" id="btn-crop-rotate-right"><i class="fa-solid fa-rotate-right"></i> Rotate</button>
+        <button class="btn btn-secondary" id="btn-cancel-crop">Cancel</button>
+        <button class="btn btn-primary" id="btn-apply-crop">
+          <i class="fa-solid fa-check"></i> Apply Crop
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Digital Signature Pad -->
+  <div class="modal-overlay" id="sig-modal" role="dialog" aria-modal="true" aria-labelledby="sig-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="sig-title"><i class="fa-solid fa-signature"></i> Draw Digital Signature</h3>
+        <button class="modal-close" id="btn-close-sig"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <p class="sig-instructions">Use your mouse, trackpad, or finger/stylus to sign within the box:</p>
+        <div class="signature-canvas-wrapper">
+          <canvas id="sig-canvas" width="500" height="200"></canvas>
+          <div class="sig-baseline"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger-soft" id="btn-clear-sig-pad"><i class="fa-solid fa-eraser"></i> Clear</button>
+        <button class="btn btn-secondary" id="btn-cancel-sig-pad">Cancel</button>
+        <button class="btn btn-primary" id="btn-save-sig-pad">
+          <i class="fa-solid fa-signature"></i> Use Signature
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== THIRD-PARTY LIBRARIES (CDN) ==================== -->
+  <!-- QRCode.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- html2canvas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- JSZip -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <!-- FileSaver -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <!-- SheetJS (XLSX/CSV) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- Cropper.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+  <!-- ==================== APPLICATION SCRIPTS ==================== -->
+  <script src="js/config.js"></script>
+  <script src="js/templates.js"></script>
+  <script src="js/card-renderer.js"></script>
+  <script src="js/sheets-sync.js"></script>
+  <script src="js/portal.js"></script>
+  <script src="js/bulk-generator.js"></script>
+  <script src="js/export-engine.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
