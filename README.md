@@ -1,6 +1,6 @@
 # 🪪 SNHS ID STUDIO - Automatic Web-Based ID Generator
 
-A full-featured, automated ID Card Generator and Batch Issuance Studio built for schools, colleges, and organizations. Designed to generate high-resolution, PVC-standard (CR80) student and employee cards with 3D live previews, real-time QR and barcode generation, webcam capture, batch CSV/Excel processing, and multi-card A4 print sheets.
+A full-featured, automated ID Card Generator and Batch Issuance Studio built for schools, colleges, and organizations. Designed to generate high-resolution, PVC-standard (CR80) student and employee cards with 3D live previews, real-time QR code generation, webcam capture, batch CSV/Excel processing, and multi-card A4 print sheets.
 
 ---
 
@@ -26,7 +26,7 @@ A full-featured, automated ID Card Generator and Batch Issuance Studio built for
   - **Demo Login**: Username: `admin` | Password: `snhs2026` (or 1-click Demo Login button).
 - Unlocks the **Staff ID Studio Workbench**:
   - **Registered Students Queue**: Review all submitted online registrations, approve them, or open in the studio with 1 click.
-  - **Single Generator**: 3D interactive flip card editor with QR/Barcode generation.
+  - **Single Generator**: 3D interactive flip card editor with large centered QR code generation.
   - **Batch CSV/Excel Generator**: Bulk card generation and ZIP downloads.
   - **A4 Multi-Card Print Sheets**: 8 or 10 cards per A4 page with crop marks for laminating and PVC trays.
   - **Design & Branding Customizer**: Custom colors, school seals, and presets.
@@ -109,7 +109,7 @@ SNHS_ID_Gen/
 │   └── style.css            # Design system, 3D flip card, and print styles
 └── js/
     ├── templates.js         # Guilloché generator, SVG seals, and theme presets
-    ├── card-renderer.js     # Real-time card DOM, QR & Barcode generator
+    ├── card-renderer.js     # Real-time card DOM & QR code generator
     ├── bulk-generator.js    # Batch spreadsheet parser & ZIP export
     ├── export-engine.js     # High-DPI PNG/PDF rasterizer & A4 sheet engine
     └── app.js               # Main application controller & modal manager
