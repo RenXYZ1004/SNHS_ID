@@ -294,6 +294,26 @@ const Portal = {
     });
   },
 
+  // Called by App when the shared cropper / signature pad was opened
+  // on behalf of the student registration wizard.
+  setStudentPhoto(dataUrl) {
+    this.studentForm.photoUrl = dataUrl;
+    const thumb = document.getElementById('reg-preview-photo');
+    const thumbBox = document.getElementById('reg-photo-thumb-container');
+    if (thumb) thumb.src = dataUrl;
+    if (thumbBox) thumbBox.classList.add('has-image');
+    this.updateStudentPortalPreview();
+  },
+
+  setStudentSignature(dataUrl) {
+    this.studentForm.signatureUrl = dataUrl;
+    const thumb = document.getElementById('reg-preview-sig');
+    const thumbBox = document.getElementById('reg-sig-thumb-container');
+    if (thumb) thumb.src = dataUrl;
+    if (thumbBox) thumbBox.classList.add('has-image');
+    this.updateStudentPortalPreview();
+  },
+
   goToWizardStep(stepNumber) {
     this.currentRegStep = stepNumber;
 
@@ -368,26 +388,7 @@ const Portal = {
         const file = e.target.files[0];
         if (file) {
           const reader = new FileReader();
-          reader.onload = (ev) => {
-            App.openCropperModal(ev.target.result);
-            const applyBtn = document.getElementById('btn-apply-crop');
-            applyBtn.onclick = () => {
-              if (App.cropper) {
-                const canvas = App.cropper.getCroppedCanvas({ width: 400, height: 470 });
-                const croppedData = canvas.toDataURL('image/jpeg', 0.95);
-                this.studentForm.photoUrl = croppedData;
-                
-                const thumb = document.getElementById('reg-preview-photo');
-                const thumbBox = document.getElementById('reg-photo-thumb-container');
-                if (thumb) thumb.src = croppedData;
-                if (thumbBox) thumbBox.classList.add('has-image');
-                
-                this.updateStudentPortalPreview();
-                App.closeCropperModal();
-                App.showToast('Photo cropped and attached.', 'success');
-              }
-            };
-          };
+          reader.onload = (ev) => App.openCropperModal(ev.target.result, 'student');
           reader.readAsDataURL(file);
           e.target.value = '';
         }
@@ -398,7 +399,7 @@ const Portal = {
     const btnRegWebcam = document.getElementById('btn-reg-webcam');
     if (btnRegWebcam) {
       btnRegWebcam.addEventListener('click', () => {
-        App.openWebcamModal();
+        App.openWebcamModal('student');
       });
     }
 
@@ -408,26 +409,7 @@ const Portal = {
     const sigInput = document.getElementById('input-reg-sig-file');
 
     if (btnRegDrawSig) {
-      btnRegDrawSig.addEventListener('click', () => {
-        App.openSigModal();
-        const saveBtn = document.getElementById('btn-save-sig-pad');
-        saveBtn.onclick = () => {
-          const canvas = document.getElementById('sig-canvas');
-          if (canvas) {
-            const sigData = canvas.toDataURL('image/png');
-            this.studentForm.signatureUrl = sigData;
-
-            const thumb = document.getElementById('reg-preview-sig');
-            const thumbBox = document.getElementById('reg-sig-thumb-container');
-            if (thumb) thumb.src = sigData;
-            if (thumbBox) thumbBox.classList.add('has-image');
-
-            this.updateStudentPortalPreview();
-            App.closeSigModal();
-            App.showToast('Signature attached.', 'success');
-          }
-        };
-      });
+      btnRegDrawSig.addEventListener('click', () => App.openSigModal('student'));
     }
 
     if (btnRegUploadSig && sigInput) {

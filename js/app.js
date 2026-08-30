@@ -15,6 +15,13 @@ const App = {
   // Cropper instance
   cropper: null,
 
+  // Which form the cropper / signature pad is currently feeding:
+  // 'card' = the Staff ID Studio card, 'student' = the registration wizard.
+  // The modals are shared, so without this the staff card swallows the
+  // student's photo and signature.
+  cropTarget: 'card',
+  sigTarget: 'card',
+
   // Signature Pad state
   sigDrawing: false,
   sigContext: null,
@@ -412,7 +419,8 @@ const App = {
   },
 
   // Open & Close Webcam Modal
-  async openWebcamModal() {
+  async openWebcamModal(target = 'card') {
+    this.cropTarget = target;
     const modal = document.getElementById('webcam-modal');
     const video = document.getElementById('webcam-video');
     if (!modal || !video) return;
@@ -453,11 +461,12 @@ const App = {
 
     const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
     this.closeWebcamModal();
-    this.openCropperModal(dataUrl);
+    this.openCropperModal(dataUrl, this.cropTarget);
   },
 
   // Open & Close Cropper Modal
-  openCropperModal(imgSrc) {
+  openCropperModal(imgSrc, target = 'card') {
+    this.cropTarget = target;
     const modal = document.getElementById('crop-modal');
     const targetImg = document.getElementById('cropper-target-img');
     if (!modal || !targetImg) return;
@@ -501,9 +510,15 @@ const App = {
       height: 470,
       imageSmoothingQuality: 'high'
     });
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
 
-    CardRenderer.state.photoUrl = canvas.toDataURL('image/jpeg', 0.95);
-    CardRenderer.render();
+    if (this.cropTarget === 'student' && window.Portal) {
+      Portal.setStudentPhoto(dataUrl);
+    } else {
+      CardRenderer.state.photoUrl = dataUrl;
+      CardRenderer.render();
+    }
+
     this.closeCropperModal();
     this.showToast('ID Photo cropped and applied.', 'success');
   },
@@ -568,15 +583,23 @@ const App = {
     if (clearBtn) clearBtn.addEventListener('click', () => this.clearSigCanvas());
     if (saveBtn) {
       saveBtn.addEventListener('click', () => {
-        CardRenderer.state.signatureUrl = canvas.toDataURL('image/png');
-        CardRenderer.render();
+        const sigData = canvas.toDataURL('image/png');
+
+        if (this.sigTarget === 'student' && window.Portal) {
+          Portal.setStudentSignature(sigData);
+        } else {
+          CardRenderer.state.signatureUrl = sigData;
+          CardRenderer.render();
+        }
+
         this.closeSigModal();
         this.showToast('Signature saved.', 'success');
       });
     }
   },
 
-  openSigModal() {
+  openSigModal(target = 'card') {
+    this.sigTarget = target;
     const modal = document.getElementById('sig-modal');
     if (modal) {
       modal.classList.add('active');
